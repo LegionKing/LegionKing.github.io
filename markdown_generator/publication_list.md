@@ -1,22 +1,3 @@
----
-layout: archive
-title: "Publications"
-permalink: /publications/
-author_profile: true
----
-
-{% if site.author.googlescholar %}
-  <div class="wordwrap">You can also find my articles on <a href="{{site.author.googlescholar}}">my Google Scholar profile</a>.</div>
-{% endif %}
-
-<!--
-{% include base_path %}
-
-{% for post in site.publications reversed %}
-  {% include archive-single.html %}
-{% endfor %}
--->
-
 <!-- copy and paste the following content directly into the _pages/publications.md -->
 ## Journal Papers
 * **Fei Wang**, Zhenya Huang, Qi Liu, Enhong Chen, Yu Yin, Jianhui Ma, Shijin Wang. Dynamic Cognitive Diagnosis: An Educational Priors-Enhanced Deep Knowledge Tracing. IEEE Transactions on Learning Technologies (IEEE TLT), 16(3): 306-323, 2024. [[paper]]({{site.baseurl}}/files/DynamicCD_TLT_2023.pdf) [[code]](https://github.com/LegionKing/Dynamic-Cognitive-Diagnosis)

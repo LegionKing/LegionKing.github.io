@@ -11,54 +11,40 @@ redirect_from:
 
 Education
 ======
-* Ph.D in Version Control Theory, GitHub University, 2018 (expected)
-* M.S. in Jekyll, GitHub University, 2014
-* B.S. in GitHub, GitHub University, 2012
+* Ph.D in Computer Science, 2024
+  * University of Science and Technology of China, Hefei, China
+* B.E. in Computer Science, 2018
+  * University of Science and Technology of China, Hefei, China
 
-Work experience
+Experience
 ======
-* Spring 2024: Academic Pages Collaborator
-  * Github University
-  * Duties includes: Updates and improvements to template
-  * Supervisor: The Users
+* Apr. 2023 - Oct. 2023: Research Intern
+  * Fuxi Lab, NetEase Inc.
+  * Duties includes: user modeling on the crowdsourcing platform, reward allocation algorithm designing
+  * Supervisor: Dr. [Runze Wu](https://wu-runze.github.io/)
 
-* Fall 2015: Research Assistant
-  * Github University
-  * Duties included: Merging pull requests
-  * Supervisor: Professor Hub
+* Summer 2018: Research Intern
+  * iFLYTEK C0.Ltd.
+  * Duties included: algorithm designing for question difficulty prediction
+  * Supervisor: Dr. [Haiping Ma](https://scholar.google.com/citations?hl=zh-CN&user=MqGm4q8AAAAJ)
+  
+Scholarship and Awards
+======
+* Outstanding Graduate (USTC, and Anhui Province), 2023.
+* Longhu Scholarship, USTC, 2023.
+* National Scholarship, USTC, 2020.
+* Academic Scholarship, USTC, 2018-2023.
+* Yuanqing Scholarhip, USTC, 2018.
 
-* Summer 2015: Research Assistant
-  * Github University
-  * Duties included: Tagging issues
-  * Supervisor: Professor Git
+Services
+======
+* TA of the courses COMP7204P (Frontiers of Machine Learning and Data Mining) and CS1503 (Introduction to Data Science), school of computer science and technology.
+* Reviewer of conferences and transactions, including SIGKDD, AAAI, IJCAI CIKM, IEEE TKDE, IEEE TLT, ACM TOIS, EDM.
   
-Skills
+Patents
 ======
-* Skill 1
-* Skill 2
-  * Sub-skill 2.1
-  * Sub-skill 2.2
-  * Sub-skill 2.3
-* Skill 3
-
-Publications
-======
-  <ul>{% for post in site.publications reversed %}
-    {% include archive-single-cv.html %}
-  {% endfor %}</ul>
+* Haoyu Liu, Fei Wang, Minmin Lin, et al. A training and aggregation method for annotation aggretation, Patent No. 202311412986.9.
+* Haoyu Liu, Fei Wang, Runze Wu, et al. A method, device for incremental truth inference, Patent No. 202311400499.0.
+* Qi Liu, Enhong Chen, Jiatong Li, Zhenya Huang, Fei Wang, Wei Huang. A method for predicting student answers, Patent No. 202210914718.6.
+* Qi Liu, Enhong Chen, Fei Wang, et al. A method for cognitive diagnosis of students, Patent No. 201910549764.9.
   
-Talks
-======
-  <ul>{% for post in site.talks reversed %}
-    {% include archive-single-talk-cv.html  %}
-  {% endfor %}</ul>
-  
-Teaching
-======
-  <ul>{% for post in site.teaching reversed %}
-    {% include archive-single-cv.html %}
-  {% endfor %}</ul>
-  
-Service and leadership
-======
-* Currently signed in to 43 different slack teams
