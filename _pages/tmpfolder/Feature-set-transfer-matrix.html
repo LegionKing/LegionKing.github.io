@@ -345,7 +345,8 @@
         	for (let i = 0; i <= actualAttributeCount1; i++) {
         		wDomain1[i] = data[rowDomain1]['w'+i];
         	}
-            for (let i = 0; i <= actualAttributeCount2; i++) {
+            wDomain2[0] = data[rowDomain1]['w0'];    // 数据文件里的是已经加上ExtraFactorBias的值，需要在UI中显示过程，所以这里使用feature set 1的w0
+            for (let i = 1; i <= actualAttributeCount2; i++) {
                 wDomain2[i] = data[rowDomain2]['w'+i];
             }
         	return {
