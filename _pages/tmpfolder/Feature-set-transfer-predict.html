@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix</title>
+    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.4.3/decimal.min.js"></script>
+
+    <style type="text/css">
+    .tg  {border-collapse:collapse;border-spacing:0}
+    .tg td,th{font-family:Arial,sans-serif;font-size:14px;padding:5px 5px;}
+    .tg-lboi{border-color:inherit;text-align:left;vertical-align:middle}
+    .tg-c4wh{background-color:#eafce4;border-color:inherit;color:#656565;text-align:center;}
+    .tg-zme7{background-color:#eafce4;border-color:inherit;text-align:right;padding-right:10px}
+    .tg-thre{background-color:#eafce4;border-color:inherit;text-align:center;padding-right:10px}
+    .tg-c3ot{border-color:inherit;text-align:center;}
+    .tg-c3ot2{background-color:#cbf4be;color:#000;border-color:inherit;text-align:center;}
+    .tg-c3ot3{background-color:#eafce4;border-color:inherit;text-align:center;}
+    .tg-c3ow0{border-color:inherit;text-align:center;width:50px;}
+    .tg-c3ow{border-color:inherit;text-align:center;width:105px;}
+    .tg-c3ow2{border-color:inherit;text-align:center;border: 2px #000 solid; width:125px;}
+    .tg-c3ow3{border-color:#2e8112;text-align:center;border: 2px #000 solid; width:100px;}
+    .tg-dvpl{border-color:inherit;text-align:right;}
+    .tg-0pky{border-color:inherit;text-align:left;}
+    .tg-eqtu{background-color:#cbf4be;color:#000;border-color:inherit;text-align:right;padding-right:10px}
+    .tg-eqtu0{background-color:#eafce4;color:#000;border-color:inherit;text-align:right;padding-right:10px}
+    .tg-c3ot0{background-color:#eafce4;color:#000;border-color:inherit;text-align:center;}
+    th {vertical-align:bottom;font-weight:bold;}
+    body {margin:0px; padding:0px}
+    .subspaceName {color:#2e8112}
+    .subspace0 {color:#8c0791}
+    .subspace1 {color:#ce1101}
+    .subspaceFactor {color:#2e8112}
+    .w_i1_0 {color:#a1d590}
+    .subspaceFactorBlack {color:#000000}
+    .xaiTop {border-top: solid 2px #2e8112;} .xaiLeft {border-left: solid 2px #2e8112;} .xaiRight {border-right: solid 2px #2e8112;} .xaiBottom {border-bottom: solid 2px #2e8112;}
+    meter {width:15px; cursor:pointer;}
+    #text_dy_pad {font-weight:bold; padding: 1px 5px;}
+    tr.adjustment {opacity:0.50;}
+    .tutorial {
+      display:inline-block;border-radius:50%;background:#0070C0;color:#fff; box-shadow: 1px 2px 3px 0px #999; visibility:hidden;
+      padding:0.2em; height:0.9em; aspect-ratio:1/1; line-height:1em;text-align:center;}
+    .inputFactor {text-align:right;width:88px;}
+    .inputValue {text-align:center;width:60px;}
+    .inputEdited {background-color:#ff9; border: 1px dashed #000;}
+    
+    /* 固定span高度样式 */
+    .fixed-height-span {
+        display: inline-block;
+        height: 1.2em;
+        line-height: 1em;
+    	width: 125px;
+        overflow: visible;
+        position: absolute;
+    	bottom: 0;
+    	left: 50%;
+    	transform: translate(-50%, -0%);
+    }
+    </style>
+    
+    <table class="tg" border="0">
+    <thead>
+      <tr class="tutorialRow">
+        <th class="tg-dvpl"><span class="tutorial" id="tutorial1">1</span></th>
+        <th class="" colspan="2"><span class="tutorial" id="tutorial2">2</span></th>
+        <th class="tg-c3ot"></th>
+        <th class="tg-c3ot showTransfer"></th>
+        <th class="tg-c3ow showDomain1"><span class="tutorial" id="tutorial3">4</span></th>
+        <th class="tg-c3ot showTransfer"></th>
+        <th class="tg-c3ow showDomain2"><span class="tutorial" id="tutorial3b">4b</span></th>
+        <th class="tg-c3ot showTransfer"></th>
+        <th class="tg-c3ot"></th>
+        <th class="tg-c3ow"><span class="tutorial" id="tutorial4">5</span></th>
+      </tr>
+      <tr>
+        <th class="tg-dvpl">Attributes</th>
+        <th class="tg-c3ow0" colspan="2"><br/>Values</th>
+        <th class="tg-c3ot"></th>
+        <th class="tg-c3ot showTransfer"></th>
+        <th class="tg-c3ow showDomain1" style="vertical-align:top">Factors when<br/><span id="text_domain1Name" class="subspace0">Typical Case</span></th>
+        <th class="tg-c3ot showTransfer"></th>
+        <th class="tg-c3ow showDomain2" style="vertical-align:top; padding: 5px 0; width:115px" id="domain2Title"><span id="domain2TitleText">Scales when predicting</span><br/><span id="text_subspaceName" class="subspaceName">Typical Case</span></th>
+        <th class="tg-c3ot showTransfer"></th>
+        <th class="tg-c3ot"></th>
+        <th class="tg-c3ow" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="tg-dvpl"><div id="text_a1">a1</div></td>
+        <td class="tg-c3ow0"><div id="text_v1">v1</div></td>
+        <td class="tg-c3ot"><meter id="meter_v1" value=".5"></meter></td>
+        <td class="tg-c3ot3 xaiRight">&times;</td>
+        <td class="tg-c3ot2 showTransfer xaiTop">(</td>
+        <td class="tg-eqtu showDomain1 xaiTop"><div id="text_w1">w1</div></td>
+        <td class="tg-c3ot2 showTransfer xaiTop">×</td>
+        <td class="tg-eqtu showDomain2 xaiTop"><div id="text_w1.1" class="subspaceFactor">w1.1</div></td>
+        <td class="tg-c3ot2 showTransfer xaiTop">)</td>
+        <td class="tg-c3ot3 xaiLeft" id="td_calc_y1">=</td>
+        <td class="tg-zme7"><div id="text_y1">y1</div></td>
+        <td class="tg-lboi" rowspan="8" id="td_brace">}</td>     <!-- the rowspan number will be updated by generateAttributeRows() -->
+        <td class="tg-lboi" rowspan="8" id="td_calc_ye">+</td>
+        <td class="tg-lboi" rowspan="8">&rarr;</td>
+    	<td class="tg-lboi" rowspan="8" id="td_sum_comp">
+    		<table class="tg" border="0">
+    			<tr><th class="tg-c3ow"><span> Risk Score</span></tr>
+    			<tr><td class="tg-c3ow3" style="border-color:#2e8112"><span id="text_sum">sum</span> <span id="text_sum_comp" style="font-weight:bold;">></span> 0</td></tr>
+    			<tr><td class="tg-c3ow">&nbsp;</td></tr>
+    		</table></td>
+    	<td class="tg-lboi" rowspan="8" id="sum_comp_arrow">&rarr;</td>
+        <td class="tg-lboi" rowspan="8" id="td_yExplain">
+    	  <table class="tg" border="0">
+    	    <tr class="tutorialRow"><th class="tg-c3ow"><span class="tutorial" id="tutorial5">6</span></th></tr>
+    		<tr><td class="tg-c3ow">&nbsp;</td></tr>
+    		<tr><th class="tg-c3ow" style="position:relative; height:15px"><span id="text_y_unitName" class="fixed-height-span"> Risk Score </span></th></tr>
+    	    <tr><th class="tg-c3ow"><span style="color:#2e8112">AI Explainer</span></th></tr>
+            <tr><td class="tg-c3ow2" style="border-color:#2e8112"><div id="text_yExplain">ye</div></td></tr>
+            <tr><td class="tg-c3ow showAiSystem"><span id="text_dy_pad"><span id="text_dy">dy%</span> <span id="text_dy_direction"></span></span></td></tr>
+    	    <tr class="tutorialRow"><th class="tg-c3ow"><span class="tutorial" id="tutorial7">7</span></th></tr>
+    		<tr><td class="tg-c3ow">&nbsp;</td></tr>
+    		<tr><td class="tg-c3ow">&nbsp;</td></tr>
+    	  </table></td>
+        <td class="tg-lboi" rowspan="5"><span id="text_dy_inequality">&asymp;</span></td>
+        <td class="tg-lboi" rowspan="5">
+    	  <table class="tg" border="0">
+    	    <tr class="tutorialRow"><th class="tg-c3ow"><span class="tutorial" id="tutorial6">3</span></th></tr>
+    		<tr><td class="tg-c3ow">&nbsp;</td></tr>
+    		<tr><th class="tg-c3ow" style="position:relative; height:15px"><span id="text_y_unitName" class="fixed-height-span"> Risk Score </span></th></tr>
+    	    <tr><th class="tg-c3ow"><span style="color:#326fff">AI System</span></th></tr>
+            <tr><td class="tg-c3ow2" style="border-color:#326fff"><div id="text_yAI">y</div></td></tr>
+            <tr><td class="tg-c3ow">&nbsp;</td></tr>
+    		<tr><td class="tg-c3ow">&nbsp;</td></tr>
+    		<tr><td class="tg-c3ow">&nbsp;</td></tr>
+    	    <tr class="tutorialRow"><th class="tg-c3ow" style="visibility:hidden"><span class="tutorial">0</span></th></tr>
+    	  </table></td>
+      </tr>
+      <!-- Dynamic attribute rows will be inserted here -->
+      <tr class="adjustment">
+        <td class="tg-dvpl"><div id="text_a0">a0</div></td>
+        <td class="tg-c3ow0"><div id="text_v0" style="display:none">v0</div></td>
+        <td class="tg-c3ot"></td>
+        <td class="tg-c4wh xaiRight">+</td>
+        <td class="tg-c3ot0 showTransfer xaiBottom">(</td>
+        <td class="tg-eqtu0 showDomain1 xaiBottom"><div id="text_w0">w0</div></td>
+        <td class="tg-c3ot0 showTransfer xaiBottom">×</td>
+        <td class="tg-eqtu0 showDomain2 xaiBottom"><div id="text_w0.1" class="subspaceFactor">w0.1</div></td>
+        <td class="tg-c3ot0 showTransfer xaiBottom">)</td>
+        <td class="tg-c3ot3 xaiLeft" id="td_calc_y0">=</td>
+        <td class="tg-zme7"><div id="text_y0">y0</div></td>
+      </tr>
+      <tr>
+        <td class="tg-dvpl"><button onclick="location.reload()">Reset</button></td>
+      </tr>
+    </tbody>
+    </table>
+</head>
+<body>
+    <div id="matrixContainer"></div>
+    <div id="formulaTooltip" class="formula-tooltip"></div>
+
+    <!-- !!!!!!!!!!!!!!!!! Note: this script has many redundant codes. This should only be used for non-transferable XAI. !!!!!!! miight clean up later.  -->
+    <script> // -----------------Read data and set up variables ----------------
+        const thousands = (n, precision, asK) => Number(n.toPrecision(precision)).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',') + (asK ? "k" : ""); // to show comma separation in numbers
+        const percentage = (n, precision, asPercent) => thousands(n * 100, precision) + (asPercent ? '%' : '');
+        const category = (n) => n == 0 ? '0 (No)' : (n == 1 ? '1 (Yes)' : 'Invalid');
+        
+        /**
+         * Read URL key-values to get condition and trial
+         */
+        const queryString = window.location.search; // e.g.: http://localhost:5500/Feature-set-transfer-matrix.html?appId=NHANES&xaiType=transferable&domainId=1&id=1&hideFactor=-1&editValues=0&tutorial=0&showPrediction=1
+        const urlParams = new URLSearchParams(queryString);
+        
+        // const xaiType = urlParams.get('xaiType');
+        // if (xaiType != 'transferable') {
+        //     alert('This script is only for transferable XAI.');
+        //     return;   // 这个return不符合语法
+        // }
+        const xaiType = 'transferable';
+
+        const appId = urlParams.get('appId');
+        const id = Number(urlParams.get('id'));
+        const domainId = Number(urlParams.get('domainId'));
+        //let subspaceId = 0;
+        const showDomain1 = domainId == 0;
+        const showDomain2 = domainId == 1;
+        const showTransfer = false;
+        const s_hideFactor = urlParams.get('hideFactor');
+        const tutorial = Number(urlParams.get('tutorial'));
+        const hideFactor = s_hideFactor == null ? -1 : Number(s_hideFactor);
+        const editValues = Number(urlParams.get('editValues'));
+        const showPrediction = Number(urlParams.get('showPrediction'));
+        
+        const vec_sum = (vec) => vec.reduce((sum, el) => sum + el, 0);
+        const vec_magnitude = (vec) => Math.sqrt(vec.reduce((sum, el) => sum + el*el, 0));
+        const vec_elementwise_product = (vec, vec2) => vec.map((el, i) => el * vec2[i]);
+        const vec_dot_product = (vec, vec2) => vec_sum(vec_elementwise_product(vec, vec2));
+        
+        var actualAttributeCount1 = 5;  // number of attributes in domain 1, bias excluded. Will be updated
+        var actualAttributeCount2 = 5;  // number of attributes in domain 2, bias excluded. Will be updated
+        var globalModel;
+        var instanceDomain1;
+        var instanceDomain2;
+        var appType;
+        var yAI;
+        var y_unitName;
+        var attsDomain1;
+        var attsDomain2;
+        var transformationMatrix;
+        var extraBias;    // used when transformation type 
+        var extraFactorBias;
+        var transformType = "value";  // "value" or "factor"
+
+        function extractAttributeNames(data, localDomainId) {	
+        	const appId_row = data.findIndex(d => d.appId == appId && d.domainId == localDomainId); // get row that has id
+        	//console.log('appId_row', appId_row);	
+        	row = appId_row;
+        	
+        	const maxAttributeCount = 8;
+        	const a = domainId == 0 ? ["Base"] : ["Base + adjustment"];
+        	for (actualAttributeCount = 1; actualAttributeCount <= maxAttributeCount; actualAttributeCount++) {
+        		if ('a'+actualAttributeCount in data[row] && data[row]['a'+actualAttributeCount]?.trim()) {
+        			a.push(data[row]['a'+actualAttributeCount]);
+        		} else {
+        			break;
+        		}
+        	}
+        	actualAttributeCount -= 1;
+        	
+        	const v_min = new Array(actualAttributeCount + 1).fill(0);
+        	const v_max = new Array(actualAttributeCount + 1).fill(0);
+        	const v_step = new Array(actualAttributeCount + 1).fill(1);
+        	for (let i = 1; i <= actualAttributeCount; i++) {
+        		v_min[i] = data[row]['v'+i+'_min'];
+        		v_max[i] = data[row]['v'+i+'_max'];
+        		v_step[i] = data[row]['v'+i+'_step'];
+        	}
+        		
+        	const y_max = Number(data[row].y_max);
+        	const y_unit = data[row].y_unit;
+        	y_unitName = data[row].y_unitName;
+        	appType = data[row].type;
+        	
+        	return {
+        		a: a,
+        		v_min: v_min, v_max: v_max, v_step,
+        		y_unit: y_unit, y_unitName: y_unitName,
+        		y_max,
+        		appType,
+        	};
+        }
+        
+        function extractGlobalModel(data) {
+        	const rowDomain1 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 0);
+        	const rowDomain2 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 1);
+        	const wDomain1 = new Array(actualAttributeCount1 + 1).fill(0);
+        	const wDomain2 = new Array(actualAttributeCount2 + 1).fill(0);  // 
+        	for (let i = 0; i <= actualAttributeCount1; i++) {
+        		wDomain1[i] = data[rowDomain1]['w'+i];
+        	}
+            for (let i = 0; i <= actualAttributeCount2; i++) {
+                wDomain2[i] = data[rowDomain2]['w'+i];
+            }
+        	return {
+        		wDomain1: wDomain1,
+        		wDomain2: wDomain2,
+        		domain1Name: data[rowDomain1].domainName,
+        		domain2Name: data[rowDomain2].domainName,
+        	};
+        }
+        
+        function extractInstance(atts, globalModel, data, id, localDomainId) {
+        	const row = data.findIndex(d => d.id == id && d.appId == appId && d.domainId == domainId);
+        	
+        	const v = new Array(actualAttributeCount + 1).fill(1);
+        	for (let i = 1; i <= actualAttributeCount; i++) {
+        		v[i] = data[row]['v'+i];
+        	}
+        	
+        	const w = new Array(actualAttributeCount + 1).fill(0);
+        	const yPartial = new Array(actualAttributeCount + 1).fill(0); // partial y's
+        	
+        	for (let i = 0; i <= actualAttributeCount; i++) {
+        		w[i] = domainId == 0 ? globalModel.wDomain1[i] : globalModel.wDomain2[i];
+        		yPartial[i] = v[i] * w[i];
+        	}
+            w[0] = globalModel.wDomain1[0];  // even when domainId == 1, w0 is the bias of domain 1, because need to show the extra bias term 
+        	const yExplain = vec_sum(yPartial);
+
+            yAI = data[row]['y_ai'];
+            //const dy = xaiType == 'none' ? 0 : (ye - y) / atts.y_max;
+            const dy = xaiType == 'none' ? 0 : (yExplain - yAI) / yAI;
+
+            return {
+            	v: v,
+            	w: w,
+            	yPartial: yPartial,
+            	yExplain: yExplain,
+            	yAI: yAI, 
+            	dy: dy,
+            };
+        }
+
+        function extractExtraFactorBias(data) {
+            const row = data.findIndex(d => d.appId == appId);
+            extraFactorBias = data[row]['delta_bw'];
+        }
+        
+        Papa.parse("./transferable-xai-app-featureset-attributes.csv", {
+        	download: true,
+        	header: true,
+        	dynamicTyping: true,
+        	complete: function(att_res) {
+        		attsDomain1 = extractAttributeNames(att_res.data, 0);
+                attsDomain2 = extractAttributeNames(att_res.data, 1);
+        		
+        		Papa.parse("./transferable-xai-featureset-models.csv", {
+        			download: true,
+        			header: true,
+        			dynamicTyping: true,
+        			complete: function(models_res) {
+        				globalModel = extractGlobalModel(models_res.data);
+                        
+        				Papa.parse("./transferable-xai-featureset-trials-data.csv", {
+        					download: true,
+        					header: true,
+        					dynamicTyping: true,
+        					complete: function(results) {
+        						instanceDomain1 = extractInstance(attsDomain1, globalModel, results.data, id, 0);
+        						instanceDomain2 = extractInstance(attsDomain2, globalModel, results.data, id, 1);
+
+                                Papa.parse("./transferable-xai-featureset-transformation-matrix.csv", {
+                                	download: true,
+                                	header: true,
+                                	dynamicTyping: true,
+                                	complete: function(matrix_results) {
+                                		extractExtraFactorBias(matrix_results.data);
+                                		
+                                		// 所有数据加载完成后，开始渲染
+                                		renderUI();
+                                	}
+                                });
+        					}
+        				});
+        			}
+        		});
+        	}
+        });
+
+        // 将所有渲染相关的代码移到这个函数中
+        function renderUI() {
+            // ---------------- Render the matrix ---------------
+            
+            var rowTitle = transformType == "value" ? "Feature values 2" : "Feature factors 2";
+            var colTitle = transformType == "value" ? "Feature values 1" : "Feature factors 1";
+            
+            // Define the feature arrays
+            var featureSet1 = attsDomain1.a.map(str => str.replace(/\^3/g, '<sup>3</sup>'));
+            var featureSet2 = attsDomain2.a.map(str => str.replace(/\^3/g, '<sup>3</sup>'));
+            
+            var value1 = instanceDomain1;
+            var value2 = instanceDomain2;
+            var factor1 = globalModel.wDomain1;
+            var factor2 = globalModel.wDomain2;
+            var valueFactor1;
+            var valueFactor2;
+            
+            // Sample matrix data (m x n)
+            var matrixData = transformationMatrix;
+
+            var approxValue1 = new Array(value1.length);
+            var approxValue2 = new Array(value2.length);
+            var approxFactor1 = new Array(factor1.length);
+            var approxFactor2 = new Array(factor2.length);
+            var approxValueFactor1;
+            var approxValueFactor2;
+            var approxMatrixData;
+            var approxExtraBias;
+            var approxExtraFactorBias;
+
+            var commonFeatureCount;
+        
+            // global parameters: extraBias, extraFactorBias. Already extracted
+
+            const actualAttributeCount = domainId == 0 ? actualAttributeCount1 : actualAttributeCount2;  // number of attributes, bias excluded. Will be updated
+            let yAI;
+            const instance = domainId == 0 ? instanceDomain1 : instanceDomain2;
+            const appType = instance.appType;
+            console.log(instance);
+            const y_unitName = instance.y_unitName;
+            const atts = domainId == 0 ? attsDomain1 : attsDomain2;
+
+            sortFeatures()
+            approximateText();
+            
+            const m = featureSet1.length;
+            const n = featureSet2.length;
+
+            /* ====================== Generate dynamic attribute rows ======================== */
+            generateAttributeRows();
+            // Update rowspan values for the brace and calculation cells
+            const totalRows = actualAttributeCount + 1; // +1 for the bias row
+            document.getElementById('td_brace').rowSpan = totalRows;
+            document.getElementById('td_calc_ye').rowSpan = totalRows;
+            // Update the next two cells that have rowspan
+            const braceCell = document.getElementById('td_brace');
+            const calcCell = document.getElementById('td_calc_ye');
+            const nextCells = braceCell.parentElement.querySelectorAll('td[rowspan]');
+            // Set rowSpan for all cells starting from the second one
+            for (let i = 1; i < nextCells.length; i++) {
+            	nextCells[i].rowSpan = totalRows;
+            }
+
+            /* ====================== Set attribute values and weights ======================== */
+            for (let i = 0; i <= actualAttributeCount; i++) {
+                debugger;
+            	document.getElementById('text_' + 'a'+i).innerHTML = atts.a[i];
+            
+            	const vi = instance.v[i];
+            	const elTextVi = document.getElementById('text_' + 'v'+i);
+            	const categoricalAttributes = ['High blood pressure?', 'Chest pain?', 'Relative has diabetes?'];
+            	elTextVi.innerHTML = categoricalAttributes.includes(atts.a[i]) ? category(vi) : thousands(vi, 2);
+            	elTextVi.title = vi;
+            	
+            	renderValueMeterUI(i, vi);
+            			
+            	if (editValues == 1) {
+            		elTextVi.innerHTML = inputValueHTML(i, 0); // 当editValues==1时，输入框初始值设为0
+            		elTextVi.title = '';//'?'; 
+            	}
+
+                let wi0 = 0, wi1 = 0;
+                let roundedWi1Text;
+                const precision = i == 0 ? 4 : 2;  // i==0 is bias
+
+                if (domainId == 0) {
+                	wi0 = instance.w[i];
+                	// document.getElementById('text_' + 'w'+i).innerHTML = atts.appType == 'classification' ? percentage(wi0, precision, true) : thousands(wi0, precision, false);    // previous version for classification
+                	document.getElementById('text_' + 'w'+i).innerHTML = thousands(wi0, precision, false);
+                } else {
+                	wi1 = instance.w[i];
+                	const element = document.getElementById('text_' + 'w'+i+'.1');
+                	// element.innerHTML = atts.appType == 'classification' ? percentage(wi1, precision, true) : thousands(wi1, precision, false);    // previous version for classification
+                    if (i == 0) {
+                        if (extraFactorBias > 0) {
+                            element.innerHTML = thousands(wi1, precision, false) + " + " + thousands(extraFactorBias, precision, false);
+                        } else {
+                            element.innerHTML = thousands(wi1, precision, false) + thousands(extraFactorBias, precision, false);
+                        }
+                    } else {
+                        element.innerHTML = thousands(wi1, precision, false);
+                    }
+                	element.classList.add('subspaceFactorBlack');    // 当不是transferable模式且domainId == 1时，w1.1列使用黑色
+                }
+
+                const wi0_title = titleDesc(atts.y_unitName, i, wi0);
+                const wi1_title = titleDesc(atts.y_unitName, i, wi1);
+                document.getElementById('text_' + 'w'+i).title = wi0_title;
+                document.getElementById('text_' + 'w'+i+'.1').title = wi1_title;
+                
+                if (hideFactor !== undefined && hideFactor == i || hideFactor <= -2) {
+                	//document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
+                	//document.getElementById('text_' + 'w'+i).title = '';
+                	const hideElement = document.getElementById('text_' + 'w'+i+'.1');
+                	hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
+                	hideElement.title = '';
+                	if (xaiType != 'transferable' && domainId == 1) {
+                		hideElement.classList.add('subspaceFactorBlack');
+                	}
+                }
+
+                // whether to show yPartial
+                // document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? '?' : (atts.appType == 'classification' ? percentage(instance.yPartial[i], precision, true) : thousands(instance.yPartial[i], precision, false));  // previous version for classification
+                // document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? "?" : (atts.appType == 'classification' ? percentage(instance.yPartial[i], 5, true) : thousands(instance.yPartial[i], 5, false));  // previous version for classification
+                document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? '?' : thousands(instance.yPartial[i], precision, false);
+                document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? "?" : thousands(instance.yPartial[i], 5, false);
+            }
+
+            /* ====================== Set domain name ======================== */
+            let subspaceName = "";
+            subspaceName = domainId == 0 ? globalModel.domain1Name : globalModel.domain2Name;
+
+            const textSubspaceName = document.getElementById('text_' + 'subspaceName');
+            textSubspaceName.innerHTML = subspaceName;
+            if (domainId == 1) { 
+            	textSubspaceName.classList.add('subspace1');
+            } else { textSubspaceName.classList.add('subspace0'); } 
+
+            /* ====================== Set factors header ======================== */
+            const text_domain1Name = document.getElementById('text_domain1Name');
+            text_domain1Name.innerHTML = globalModel.domain1Name;
+            // Set domain2 title text based on xaiType
+            const domain2TitleText = document.getElementById('domain2TitleText');
+            domain2TitleText.innerHTML = 'Factors when';
+
+            /* ====================== Set y unit and y unit name ======================== */
+            const text_y_unit = atts.y_unit == undefined ? '' : "(" + atts.y_unit + ")";
+            const targetDomainName = xaiType == 'transferable' ? (domainId == 0 ? globalModel.domain1Name : globalModel.domain2Name) : globalModel.domainName;
+            Array.from(document.querySelectorAll('[id="text_y_unitName"]')).forEach(el => el.innerHTML = (atts.appType == 'classification' ? 'Have ' + targetDomainName + '?' : (atts.y_unitName + " " + text_y_unit)));
+            document.getElementById('text_y_unitName_partial').innerHTML = atts.y_unitName + " " + text_y_unit;
+            
+            // 检查text_y_unitName的行数并调整transform
+            checkTextLinesAndAdjustTransform();
+
+            /* ====================== Set yExplain, yAI and dy ======================== */
+            const text_ye = document.getElementById('text_' + 'yExplain');
+            // text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : (atts.appType == 'classification' ? percentage(instance.yExplain, 3, false) : thousands(instance.yExplain, 3, false));    // previous version for classification
+            // text_ye.title = xaiType == 'none' || hideFactor == -2 ? "?" : (atts.appType == 'classification' ? percentage(instance.yExplain, 5, false) : thousands(instance.yExplain, 5, false));  // previous version for classification
+            text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : (atts.appType == 'classification' ? (instance.yExplain < 0 ? 'No' : 'Yes') : thousands(instance.yExplain, 3, false));
+            
+            // Set text_sum to yExplain value
+            const text_sum = document.getElementById('text_sum');
+            text_sum.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : thousands(instance.yExplain, 3, false);
+            text_sum.title = xaiType == 'none' || hideFactor == -2 ? "?" : thousands(instance.yExplain, 5, false);
+            const text_sum_comp = document.getElementById('text_sum_comp');
+            text_sum_comp.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : (instance.yExplain > 0 ? '&ge;' : '<');
+            
+            // document.getElementById('text_' + 'yAI').innerHTML = showPrediction ? (atts.appType == 'classification' ? percentage(instance.yAI, 3, false) : thousands(instance.yAI, 3, false)) : '?';  // previous version for classification
+            // document.getElementById('text_' + 'yAI').title = showPrediction ? (atts.appType == 'classification' ? percentage(instance.yAI, 5, false) : thousands(instance.yAI, 5, false)) : '?';  // previous version for classification
+            document.getElementById('text_' + 'yAI').innerHTML = showPrediction ? (atts.appType == 'classification' ? (instance.yAI > 0.5 ? 'Yes' : 'No') : thousands(instance.yAI, 3, false)) : '?';
+            document.getElementById('text_' + 'yAI').title = showPrediction ? (atts.appType == 'classification' ? (instance.yAI > 0.5 ? 'Yes' : 'No') : thousands(instance.yAI, 5, false)) : '?';
+            	
+            renderDyUI(instance.dy);
+
+            /* ====================== Set visibility of elements ======================== */
+            Array.from(document.getElementsByClassName('showAiSystem')).forEach(el => el.style.visibility = showPrediction ? 'visible' : 'hidden');
+            
+            // 当hideFactor == -4时，只显示Attributes、Values、右箭头和AI System
+            if (hideFactor == -4) {
+            	// 隐藏Factors相关的列
+            	Array.from(document.getElementsByClassName('showDomain1')).forEach(el => el.style.display = 'none');
+            	Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none');
+            	Array.from(document.getElementsByClassName('showTransfer')).forEach(el => el.style.display = 'none');
+            	
+            	// 隐藏Partial Score列（y1, y2, y3...）
+            	for (let i = 0; i <= actualAttributeCount; i++) {
+            		const yElement = document.getElementById('text_y' + i);
+            		if (yElement) {
+            			yElement.parentElement.style.display = 'none';
+            		}
+            	}
+            	const yPartial = document.getElementById('td_yPartial');
+            	if (yPartial) {
+            		yPartial.style.display = 'none';
+            	}
+            	
+            	// 隐藏AI Explainer列
+            	const aiExplainerTable = document.getElementById('td_yExplain');
+            	if (aiExplainerTable) {
+            		aiExplainerTable.style.display = 'none';
+            	}
+            	
+            	// 隐藏计算符号列（×, =, +, ≈}）
+            	Array.from(document.querySelectorAll('.xaiRight, .xaiLeft, #td_calc_ye')).forEach(el => {
+            		if (el) el.style.display = 'none';
+            	});
+            	const asymCell = document.getElementById('text_dy_inequality');
+            	if (asymCell) {
+            		asymCell.style.display = 'none';
+            	}
+            	
+            	// 隐藏dy相关列
+            	const dyInequalityCell = document.querySelector('td[rowspan="5"]');
+            	if (dyInequalityCell) {
+            		dyInequalityCell.style.display = 'none';
+            	}
+            
+            	// 隐藏Bias行
+            	document.getElementById('text_a0').style.display = 'none';
+            
+            	// 隐藏sum_comp列
+            	const sumCompCell = document.getElementById('td_sum_comp');
+            	if (sumCompCell) {
+            		sumCompCell.style.display = 'none';
+            	}
+            	document.getElementById('sum_comp_arrow').style.display = 'none';
+            
+            } else {
+            	// 正常显示逻辑
+            	Array.from(document.getElementsByClassName('showDomain1')).forEach(el => el.style.display = showDomain1 ? 'revert' : 'none');
+            	Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = showDomain2 ? 'revert' : 'none');
+            	Array.from(document.getElementsByClassName('showTransfer')).forEach(el => el.style.display = showTransfer ? 'revert' : 'none');
+            	document.getElementById('td_sum_comp').style.display = atts.appType == 'regression' ? 'none' : 'revert';
+            	document.getElementById('sum_comp_arrow').style.display = atts.appType == 'regression' ? 'none' : 'revert';
+            }
+
+            /* ====================== Set tutorial visibility ======================== */
+            if (0 < tutorial && tutorial < 10) {   // show specific tutorial component
+            	let tutorialEl = document.getElementById('tutorial' + tutorial);
+            	if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+            	
+            	if (tutorial == 3) {
+            		let tutorialEl = document.getElementById('tutorial3b');
+            		if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+            	}
+            }
+            else if (tutorial === undefined || tutorial == 0) { // no tutorial
+            	Array.from(document.getElementsByClassName('tutorialRow')).forEach(el => el.style.display = 'none');
+            }
+            else if (tutorial == -1) { // show all tutorial components
+            	Array.from(document.getElementsByClassName('tutorial')).forEach(el => {
+            		if (el.parentElement.style.visibility != 'hidden') { el.style.visibility = 'visible'; }
+            	});
+            	document.getElementById('tutorial7').style.visibility = atts.appType == 'classification' ? 'hidden' : 'visible';
+            	if (xaiType == 'transferable' && domainId == 0) { Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none'); }
+            }
+            else if (tutorial == -2) {  // show all tutorial components for explanation, gray out AI components
+            	for (let i = 1; i <= 7; i++) {
+            		let tutorialEl = document.getElementById('tutorial' + i);
+            		switch (i) {
+            			case 1:
+            			case 2:
+            			case 6: // gray out AI components
+            				if (tutorialEl.parentElement.style.visibility != 'hidden') { 
+            					tutorialEl.style.visibility = 'visible';
+            					tutorialEl.style.opacity = '0.3';
+            				 }
+            				break;
+            			case 3:
+            				tutorialEl.style.visibility = 'visible';
+            				document.getElementById('tutorial3b').style.visibility = 'visible';
+            				break;
+            			case 7:
+            				if (tutorialEl.parentElement.style.visibility != 'hidden') { 
+            					tutorialEl.style.visibility = atts.appType == 'classification' ? 'hidden' : 'visible'
+            				 }
+            				break;
+            			default:
+            				if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+            				break;
+            		}
+            	}
+            	if (xaiType == 'transferable' && domainId == 0) { Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none'); }
+            }
+
+
+        const inputFactorHTML = function(i, value, title, isB) {
+        	if (hideFactor == -2) {
+        		// 当hideFactor == -2时，如果xaiType不是transferable，则初始值为0
+        		if (xaiType == 'transferable') {
+        			value = isB ? 0 : 0;  // transferable模式下w1.1列使用1，w1列使用0
+        		} else {
+        			value = 0;  // 非transferable模式下所有输入框初始值为0
+        		}
+        	}
+        	const placeholder = xaiType == 'none' ? '?' : Number(value.toPrecision(i == 0 ? 3 : 2));
+        	title = xaiType == 'none' || hideFactor <= -2 ? '' : title;
+        	
+        	return '<input id="input_w' + i + (isB ? '.1' : '') + '" class="inputFactor" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="" title="'+title+'" autocomplete="off" />';  // If want to show k after the placeholder, add 'k' after />
+        }
+        
+        const inputValueHTML = function(i, value) {
+        	const placeholder = thousands(value, i == 1 ? 3 : 2);
+        	const title = value;
+        	const min = atts.v_min[i], max = atts.v_max[i], step = atts.v_step[i];	
+        	return '<input id="input_v' + i + '" class="inputValue" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="" min="'+min+'" max="'+max+'" step="'+step+'" title="'+title+'" autocomplete="off" />';
+        }
+        
+        function checkTextLinesAndAdjustTransform() {
+        	// 获取所有text_y_unitName元素
+        	const textElements = document.querySelectorAll('[id="text_y_unitName"]');
+        	
+        	textElements.forEach(textElement => {
+        		// 获取包含该元素的th元素
+        		const thElement = textElement.closest('th');
+        		if (!thElement) return;
+        		
+        		// 创建一个临时元素来测量文字的实际宽度
+        		const tempElement = document.createElement('span');
+        		tempElement.style.cssText = `
+        			position: absolute;
+        			visibility: hidden;
+        			white-space: nowrap;
+        			font-family: ${window.getComputedStyle(textElement).fontFamily};
+        			font-size: ${window.getComputedStyle(textElement).fontSize};
+        			font-weight: ${window.getComputedStyle(textElement).fontWeight};
+        		`;
+        		tempElement.textContent = textElement.textContent;
+        		document.body.appendChild(tempElement);
+        		
+        		// 获取文字的实际宽度和容器宽度
+        		const textWidth = tempElement.offsetWidth;
+        		const containerWidth = textElement.offsetWidth;
+        		
+        		// 清理临时元素
+        		document.body.removeChild(tempElement);
+        		
+        		// 如果文字宽度超过容器宽度，说明会换行
+        		if (textWidth > containerWidth) {
+        			// 移除原transform并换成新的
+        			let currentStyle = thElement.getAttribute('style');
+        			currentStyle = currentStyle + '; transform: translate(-0%,-50%)'
+        			thElement.setAttribute('style', currentStyle);
+        		}
+        	});
+        }
+        
+        function generateAttributeRows() {
+        	// Clear existing dynamic rows
+        	const existingRows = document.querySelectorAll('[id^="attribute-row-"]');
+        	existingRows.forEach(row => row.remove());
+        	
+        	// Find the insertion point (before the adjustment row)
+        	const adjustmentRow = document.querySelector('.adjustment');
+        	const tbody = adjustmentRow.parentElement;
+        	
+        	// Generate rows from 2 to actualAttributeCount
+        	for (let i = 2; i <= actualAttributeCount; i++) {
+        		const row = document.createElement('tr');
+        		row.id = 'attribute-row-' + i;
+        		
+        		row.innerHTML = `
+        			<td class="tg-dvpl"><div id="text_a${i}">a${i}</div></td>
+        			<td class="tg-c3ow0"><div id="text_v${i}">v${i}</div></td>
+        			<td class="tg-c3ot"><meter id="meter_v${i}" value=".5"></meter></td>
+        			<td class="tg-c3ot3 xaiRight">&times;</td>
+        			<td class="tg-c3ot2 showTransfer">(</td>
+        			<td class="tg-eqtu showDomain1"><div id="text_w${i}">w${i}</div></td>
+        			<td class="tg-c3ot2 showTransfer">×</td>
+        			<td class="tg-eqtu showDomain2"><div id="text_w${i}.1" class="subspaceFactor">w${i}.1</div></td>
+        			<td class="tg-c3ot2 showTransfer">)</td>
+        			<td class="tg-c3ot3 xaiLeft" id="td_calc_y${i}">=</td>
+        			<td class="tg-zme7"><div id="text_y${i}">y${i}</div></td>
+        		`;
+        		
+        		// 如果hideFactor == -4，隐藏不需要的列
+        		if (hideFactor == -4) {
+        			const cells = row.querySelectorAll('.xaiRight, .xaiLeft, .showTransfer, .showDomain1, .showDomain2, #td_calc_y' + i);
+        			cells.forEach(cell => {
+        				if (cell) cell.style.display = 'none';
+        			});
+        			// 隐藏y列
+        			const yCell = row.querySelector('.tg-zme7');
+        			if (yCell) yCell.style.display = 'none';
+        		}
+        		
+        		// Insert before the adjustment row
+        		tbody.insertBefore(row, adjustmentRow);
+        	}
+        }
+        
+        
+        function renderValueMeterUI(i, vi) {
+        	const meter = document.getElementById('meter_' + 'v'+i);
+        	if (i > 0) {
+        		meter.value = vi;
+        		meter.min = atts.v_min[i];
+        		meter.max = atts.v_max[i];
+        		meter.title = "min: " + thousands(meter.min, i == 1 ? 3 : 2) + ", max: " + thousands(meter.max, i == 1 ? 3 : 2);
+        	}
+        }
+        
+        function renderDyUI(dy) {
+        	if (atts.appType == 'classification') {
+        		// 当appType为classification时，使text_dy不可见
+        		document.getElementById('text_' + 'dy').style.visibility = 'hidden';
+        		const textDyInequality = document.getElementById('text_' + 'dy_inequality');
+        		// 读取text_yAI和text_yExplain的值，如果相同，则textDyInequality为"="，否则为"≠"
+        		const textYAI = document.getElementById('text_' + 'yAI');
+        		const textYExplain = document.getElementById('text_' + 'yExplain');
+        		textDyInequality.innerHTML = (!showPrediction || hideFactor != -1) ? "?" : textYAI.innerHTML == textYExplain.innerHTML ? "=" : "≠";
+        		return;
+        	}
+        	const abs_dy = Math.abs(dy);
+        	document.getElementById('text_' + 'dy').innerHTML = !showPrediction ? "?" : thousands((abs_dy) * 100, 2) + '%';
+        	document.getElementById('text_' + 'dy').title = !showPrediction ? "?" : thousands((abs_dy) * 100, 4) + '%';
+        	
+        	const diffToDark = (diff, threshold) => (1 - diff) * (100 - threshold) + threshold; // calculate redness based on % difference
+        	const lightness_dy = diffToDark(abs_dy, 60);
+        	const hue = dy > 0 ? 0 : 190; // 0 red, 180 blue
+        	
+        	document.getElementById('text_' + 'dy_pad').style.background = 'hsl(' + hue + ', 100%, ' + lightness_dy + '%)';
+        	
+        	const textDyDirection = document.getElementById('text_' + 'dy_direction');
+        	const textDyInequality = document.getElementById('text_' + 'dy_inequality');
+        	textDyDirection.innerHTML = showPrediction ? (dy > 0 ? "Higher" : (dy < 0 ? "Lower" : "Different")) : 'Different';
+        	textDyInequality.innerHTML = showPrediction ? (dy > 0 ? "&gt;" : (dy < 0 ? "&lt;" : "&asymp;")) : '&asymp;';
+        }
+        
+        let inputsActivated = false;
+        const activateInputs = function(input_wi) {
+        	if (inputsActivated == true) { return; }
+        	
+        	for (let i = 0; i <= actualAttributeCount; i++) {
+        		const input_vi = document.getElementById('input_' + 'v'+i);
+        		const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
+        		
+        		const init = function(input) {
+        			if (input == null) { return; }
+        			if (input.value == '') {
+        				if (editValues || hideFactor <= -2 || (hideFactor >= 0 && hideFactor == i)) { 
+        					input.value = input.placeholder == '?' ? 0 : Number(input.placeholder); 
+        				}
+        				else { 
+        					input.value = 0; 
+        				}
+        			}
+        		}
+        		init(input_vi);
+        		init(input_wi1);
+        	}
+        	inputsActivated = true;
+        	
+        	calculateYe(null);
+        }
+        const calculateYe = function(el) {
+        	if (el) { el.classList.add('inputEdited'); }
+        
+        	ye = 0;
+        	for (let i = 0; i <= actualAttributeCount; i++) {
+        		ye += calculateYi(i);
+        	}
+        	const text_ye = document.getElementById('text_' + 'yExplain');
+        	// text_ye.innerHTML = appType == 'classification' ? percentage(ye, 3, false) : thousands(ye, 3, false);  // previous version for classification
+        	// text_ye.title = appType == 'classification' ? percentage(ye, 5, false) : thousands(ye, 5, false);  // previous version for classification
+        	text_ye.innerHTML = appType == 'classification' ? (ye < 0 ? 'No' : 'Yes') : thousands(ye, 3, false);
+        	text_ye.title = appType == 'classification' ? (ye > 0 ? 'No' : 'Yes') : thousands(ye, 5, false);
+        
+        	// This is for classification only, invisible for regression
+        	const text_sum = document.getElementById('text_sum');
+        	text_sum.innerHTML = thousands(ye, 3, false);
+        	text_sum.title = thousands(ye, 5, false);
+        	const text_sum_comp = document.getElementById('text_sum_comp');
+        	text_sum_comp.innerHTML = ye < 0 ? '<' : '&ge;';
+        	
+        	dy = (ye - yAI) / yAI;
+        	renderDyUI(dy);
+        }
+        const calculateYi = function(i) {
+        	const input_vi = document.getElementById('input_' + 'v'+i);
+        	const input_wi0 = document.getElementById('input_' + 'w'+i);
+        	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
+        	
+        	let wi0, wi1;
+        	if (hideFactor <= -2) { 
+        		wi0 = instance.w[i];  // 使用默认值，不从输入框读取
+        		wi1 = Number(input_wi1.value); 
+        		// 只有当输入框有值时才设置title
+        		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
+        	}
+        	else if (hideFactor > 0 && hideFactor == i) {
+        		// 当hideFactor > 0时，只有指定的因子变成输入框
+        		wi0 = instance.w[i];
+        		wi1 = Number(input_wi1.value);
+        		// 只有当输入框有值时才设置title
+        		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
+        	}
+        	else { 
+        		wi0 = instance.w[i]; 
+        		wi1 = 1; 
+        	}
+        
+        	let vi = instance.v[i];
+        	if (editValues) { 
+        		vi = Number(input_vi.value);
+        		input_vi.title = titleDesc(atts.y_unitName, i, vi);
+        	}
+        	
+        	const yi = vi * (wi0 * wi1);	
+        	
+        	const text_yi = document.getElementById('text_' + 'y'+i);   // yPartial
+        	text_yi.innerHTML = thousands(yi, i == 0 ? 3 : 2, false);
+        	text_yi.title = thousands(yi, 5, false);
+        	
+        	renderValueMeterUI(i, vi);
+        	
+        	return yi;
+        }
+        
+        
+        function titleDesc(y_unitName, i, wi) {
+        	return i == 0 ? y_unitName + " adjusted by " + thousands(wi, 5, false) :
+        					y_unitName + " changes by " + thousands(wi, 5, false) + " for each increase in " + atts.a[i];
+        }
+        
+        function roundToPrecision(number, precision, sparse = false) {
+            if (Math.abs(number) >= 10) { //取整
+                return Math.round(number);
+            }
+            
+            let numberDecimal = Math.abs(number) >= 1 ? precision - 1 : precision;  // 有效数字中小数部分占的数量
+            //numberDecimal = numberDecimal > 3 ? 3 : numberDecimal;   // 矩阵的小数部分最多保留3位
+            numberApprox = Math.round(2 * number * Math.pow(10, numberDecimal - 1)) / 2 / Math.pow(10, numberDecimal - 1);
+            if (sparse) {
+                numberApprox = Math.abs(numberApprox) < 0.0025 ? 0 : numberApprox;
+            }
+            return numberApprox;
+        }
+
+        function approximateText() {
+            for (let i = 0; i < value1.length; i++) {
+                approxValue1[i] = roundToPrecision(value1[i], 3);
+            }
+            for (let i = 0; i < value2.length; i++) {
+                approxValue2[i] = roundToPrecision(value2[i], 3);
+            }
+            for (let i = 0; i < factor1.length; i++) {
+                approxFactor1[i] = roundToPrecision(factor1[i], 3);
+            }
+            for (let i = 0; i < factor2.length; i++) {
+                approxFactor2[i] = roundToPrecision(factor2[i], 3);
+            }
+            approxExtraFactorBias = roundToPrecision(extraFactorBias, 3);
+        }
+
+        /**
+         * 对特征进行排序，相同特征排在最前面，不同特征排在后面
+         */
+        function sortFeatures() {
+            // 找到相同的特征
+            const commonFeatures = [];
+            const feature1Indices = [];
+            const feature2Indices = [];
+            
+            // 遍历featureSet1，找到在featureSet2中也存在的特征
+            for (let i = 0; i < featureSet1.length; i++) {
+                for (let j = 0; j < featureSet2.length; j++) {
+                    if (featureSet1[i] === featureSet2[j]) {
+                        commonFeatures.push(featureSet1[i]);
+                        feature1Indices.push(i);
+                        feature2Indices.push(j);
+                        break;
+                    }
+                }
+            }
+            commonFeatureCount = commonFeatures.length;
+            
+            // 找到featureSet1中独有的特征
+            const uniqueFeatures1 = [];
+            const uniqueIndices1 = [];
+            for (let i = 0; i < featureSet1.length; i++) {
+                if (!commonFeatures.includes(featureSet1[i])) {
+                    uniqueFeatures1.push(featureSet1[i]);
+                    uniqueIndices1.push(i);
+                }
+            }
+            
+            // 找到featureSet2中独有的特征
+            const uniqueFeatures2 = [];
+            const uniqueIndices2 = [];
+            for (let i = 0; i < featureSet2.length; i++) {
+                if (!commonFeatures.includes(featureSet2[i])) {
+                    uniqueFeatures2.push(featureSet2[i]);
+                    uniqueIndices2.push(i);
+                }
+            }
+            
+            // 构建排序后的特征数组
+            featureSet1 = [...commonFeatures, ...uniqueFeatures1];
+            featureSet2 = [...commonFeatures, ...uniqueFeatures2];
+            
+            // 构建索引映射
+            const feature1IndexMap = [...feature1Indices, ...uniqueIndices1];
+            const feature2IndexMap = [...feature2Indices, ...uniqueIndices2];
+
+            // Helper function to reorder a 1D array based on an index map
+            const reorderArray = (originalArr, indexMap) => {
+                const newArr = new Array(indexMap.length);
+                for (let i = 0; i < indexMap.length; i++) {
+                    newArr[i] = originalArr[indexMap[i]];
+                }
+                return newArr;
+            };
+
+            // Reorder value1, factor1, and extraBias based on feature1IndexMap
+            value1 = reorderArray(value1, feature1IndexMap);
+            factor1 = reorderArray(factor1, feature1IndexMap);
+
+            // Reorder value2 and factor2 based on feature2IndexMap
+            value2 = reorderArray(value2, feature2IndexMap);
+            factor2 = reorderArray(factor2, feature2IndexMap);
+        }
+
+        }
+        
+        // 页面加载时开始数据加载流程
+        window.onload = function() {
+            // 数据加载完成后会自动调用 initializeMatrix()
+        };
+    </script>
+</body>
+</html> 

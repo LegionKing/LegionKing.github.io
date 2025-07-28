@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix</title>
+    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.4.3/decimal.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: block;
+            overflow: auto;
+        }
+        
+        .matrix {
+            display: inline-block;
+            border-collapse: collapse;
+            transform: rotate(45deg);
+            transform-origin: center;
+            margin: 20px;
+            table-layout: fixed;
+            width: auto;
+            height: auto;
+         }
+        
+        .matrix td {
+            width: 70px;
+            height: 70px;
+            border: 1px solid black;
+            text-align: center;
+            vertical-align: middle;
+            padding: 5px;
+            /* overflow: visible; */
+            /* white-space: nowrap; */
+            box-sizing: border-box;
+            min-width: 70px;
+            max-width: 70px;
+            min-height: 70px;
+            max-height: 70px;
+        }
+
+        .matrix-value {
+            background-color: transparent;
+            border: 1px solid black !important;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        
+        .matrix-value:hover {
+            background-color: #e8f5e8;
+        }
+        
+        .highlight-row {
+            background-color: #e8f5e8 !important;
+        }
+        
+        .highlight-col {
+            background-color: #e8f5e8 !important;
+        }
+        
+        /* 保持共同特征区域的高亮样式 */
+        .common-feature-area.highlight-row,
+        .common-feature-area.highlight-col {
+            background-color: #e8f5e8 !important;
+        }
+        
+        .formula-tooltip {
+            position: fixed;
+            background-color: #f0f0f0;
+            border: 1px solid #1fb911;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 300px;
+            white-space: pre-wrap;
+            display: none;
+        }
+        
+        .matrix-value-text {
+            transform: rotate(-45deg);
+            transform-origin: center;
+            display: inline-block;
+            white-space: nowrap;
+            overflow: visible;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+        
+        .row-header,
+        .column-header {
+            background-color: transparent;
+            border: none;
+            position: relative;
+            overflow: visible;
+        }
+
+        .row-header-text {
+            display: inline-block;
+            white-space: break-spaces;
+            overflow: visible;
+        }
+
+        .column-header-text {
+            transform: rotate(-90deg);
+            transform-origin: center;
+            display: inline-block;
+            white-space: break-spaces;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+        }
+
+        .row-header-value,
+        .column-header-value {  /* Only for column header value */
+            background-color: transparent;
+            border: none;
+            position: relative;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .row-header-value-text {
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .column-header-value-text {  /* Only for column header value */
+            transform: rotate(-90deg);
+            transform-origin: center;
+            display: inline-block;
+            white-space: nowrap;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+        }
+        
+        .corner {
+            background-color: transparent;
+            border: none;
+        }
+        
+        .title-cell {
+            background-color: transparent;
+            border: none;
+            height: 30px;
+            text-align: center;
+            vertical-align: bottom;
+            transform-origin: center;
+            font-weight: bold;
+        }
+        
+        .title-column {
+            background-color: transparent;
+            border: none;
+            width: 30px;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: visible;
+            position: relative;
+        }
+
+        .title-column-text {
+             transform: rotate(-90deg);
+             transform-origin: center;
+             white-space: nowrap;
+             vertical-align: middle;
+             display: inline-block;
+             position: absolute;
+             overflow: visible;
+             width: auto;
+             min-width: 0;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%) rotate(-90deg);
+         }
+         
+         /* 隐藏列样式 */
+         .hidden-column {
+             width: 20px !important;
+             min-width: 20px !important;
+             max-width: 20px !important;
+             padding: 0 !important;
+             border: none !important;
+             overflow: hidden !important;
+             visibility: hidden !important;
+         }
+
+        /* 调整前几行 */
+        .matrix tr:nth-child(1) td,
+        .matrix tr:nth-child(2) td,
+        .matrix tr:nth-child(3) td {
+            border: none;   /* 移除边框 */
+            height: 30px;   /* 高度减少 */
+            vertical-align: bottom;   /* 文字下对齐 */
+            min-height: 35px;
+            max-height: 35px;
+        }
+        
+                 /* 调整前三列 */
+         .matrix td:nth-child(1),
+         .matrix td:nth-child(3) {
+             border: none;    /* 移除边框 */
+             transform-origin: center;
+             width: 30px;
+             text-align: bottom;    /* 文字下对齐 */
+             min-width: 35px;
+             max-width: 35px;
+         }
+         
+         /* 第二列加宽 */
+         .matrix td:nth-child(2) {
+             border: none;    /* 移除边框 */
+             transform-origin: center;
+             width: 80px;
+             text-align: bottom;    /* 文字下对齐 */
+             min-width: 80px;
+             max-width: 80px;
+         }
+         
+         /* 共同特征区域样式 */
+         .common-feature-area {
+             background-color: #f5f5f5 !important;
+             color: #666 !important;
+         }
+         
+         .common-feature-area .matrix-value-text,
+         .common-feature-area .row-header-text,
+         .common-feature-area .column-header-text,
+         .common-feature-area .row-header-value-text,
+         .common-feature-area .column-header-value-text {
+             color: #666 !important;
+         }
+    </style>
+</head>
+<body>
+    <div id="matrixContainer"></div>
+    <div id="formulaTooltip" class="formula-tooltip"></div>
+
+    <!-- !!!!!!!!!!!!!!!!! Note: this script has many redundant codes. This should only be used for non-transferable XAI. !!!!!!! miight clean up later.  -->
+    <script> // -----------------Read data and set up variables ----------------
+        const thousands = (n, precision, asK) => Number(n.toPrecision(precision)).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',') + (asK ? "k" : ""); // to show comma separation in numbers
+        const percentage = (n, precision, asPercent) => thousands(n * 100, precision) + (asPercent ? '%' : '');
+        const category = (n) => n == 0 ? '0 (No)' : (n == 1 ? '1 (Yes)' : 'Invalid');
+        
+        /**
+         * Read URL key-values to get condition and trial
+         */
+        const queryString = window.location.search; // e.g.: http://localhost:5500/Feature-set-transfer-matrix.html?appId=NHANES&xaiType=transferable&domainId=1&id=1&hideFactor=-1&editValues=0&tutorial=0&showPrediction=1
+        const urlParams = new URLSearchParams(queryString);
+        
+        // const xaiType = urlParams.get('xaiType');
+        // if (xaiType != 'transferable') {
+        //     alert('This script is only for transferable XAI.');
+        //     return;   // 这个return不符合语法
+        // }
+        const xaiType = 'transferable';
+
+        const appId = urlParams.get('appId');
+        const id = Number(urlParams.get('id'));
+        const domainId = Number(urlParams.get('domainId'));
+        const precision = Number(urlParams.get('precision'));
+        //let subspaceId = 0;
+        // const showDomain1 = (xaiType == 'isolated' && domainId == 0) || xaiType == 'transferable';
+        // const showDomain2 = (xaiType == 'isolated' && domainId == 1) || xaiType == 'transferable' || xaiType == 'none';
+        // const showTransfer = xaiType == 'transferable';
+        // const s_hideFactor = urlParams.get('hideFactor');
+        // const tutorial = Number(urlParams.get('tutorial'));
+        // const hideFactor = s_hideFactor == null ? -1 : Number(s_hideFactor);
+        // const editValues = Number(urlParams.get('editValues'));
+        // const showPrediction = Number(urlParams.get('showPrediction'));
+        
+        const vec_sum = (vec) => vec.reduce((sum, el) => sum + el, 0);
+        const vec_magnitude = (vec) => Math.sqrt(vec.reduce((sum, el) => sum + el*el, 0));
+        const vec_elementwise_product = (vec, vec2) => vec.map((el, i) => el * vec2[i]);
+        const vec_dot_product = (vec, vec2) => vec_sum(vec_elementwise_product(vec, vec2));
+        
+        var actualAttributeCount1 = 5;  // number of attributes in domain 1, bias excluded. Will be updated
+        var actualAttributeCount2 = 5;  // number of attributes in domain 2, bias excluded. Will be updated
+        var globalModel;
+        var instanceDomain1;
+        var instanceDomain2;
+        var appType;
+        var yAI;
+        var y_unitName;
+        var attsDomain1;
+        var attsDomain2;
+        var transformationMatrix;
+        var extraBias;    // used when transformation type 
+        var extraFactorBias;
+        var transformType = "value";  // "value" or "factor"
+
+        function extractAttributeNames(data, localDomainId) {	
+        	const appId_row = data.findIndex(d => d.appId == appId && d.domainId == localDomainId); // get row that has id
+        	row = appId_row;
+        	
+        	const maxAttributeCount = 8;
+        	const a = ["Base"];
+        	for (actualAttributeCount = 1; actualAttributeCount <= maxAttributeCount; actualAttributeCount++) {
+        		if ('a'+actualAttributeCount in data[row] && data[row]['a'+actualAttributeCount]?.trim()) {
+        			a.push(data[row]['a'+actualAttributeCount]);
+        		} else {
+        			break;
+        		}
+        	}
+        	actualAttributeCount -= 1;
+        	
+        	const v_min = new Array(actualAttributeCount + 1).fill(0);
+        	const v_max = new Array(actualAttributeCount + 1).fill(0);
+        	const v_step = new Array(actualAttributeCount + 1).fill(1);
+        	for (let i = 1; i <= actualAttributeCount; i++) {
+        		v_min[i] = data[row]['v'+i+'_min'];
+        		v_max[i] = data[row]['v'+i+'_max'];
+        		v_step[i] = data[row]['v'+i+'_step'];
+        	}
+        		
+        	const y_max = Number(data[row].y_max);
+        	const y_unit = data[row].y_unit;
+        	y_unitName = data[row].y_unitName;
+        	appType = data[row].type;
+        	
+        	return {
+        		a: a,
+        		v_min: v_min, v_max: v_max, v_step,
+        		y_unit: y_unit, y_unitName: y_unitName,
+        		y_max,
+        		appType,
+        	};
+        }
+        
+        function extractGlobalModel(data) {
+        	const rowDomain1 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 0);
+        	const rowDomain2 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 1);
+        	const wDomain1 = new Array(actualAttributeCount1 + 1).fill(0);
+        	const wDomain2 = new Array(actualAttributeCount2 + 1).fill(0);  // 
+        	for (let i = 0; i <= actualAttributeCount1; i++) {
+        		wDomain1[i] = data[rowDomain1]['w'+i];
+        	}
+            for (let i = 0; i <= actualAttributeCount2; i++) {
+                wDomain2[i] = data[rowDomain2]['w'+i];
+            }
+        	return {
+        		wDomain1: wDomain1,
+        		wDomain2: wDomain2,
+        		domain1Name: data[rowDomain1].domainName,
+        		domain2Name: data[rowDomain2].domainName,
+        	};
+        }
+        
+        function extractInstance(atts, globalModel, data, id, localDomainId) {
+        	const row = data.findIndex(d => d.id == id && d.appId == appId && d.domainId == localDomainId);
+        	
+        	const v = new Array(actualAttributeCount + 1).fill(1);
+        	for (let i = 1; i <= actualAttributeCount; i++) {
+        		v[i] = data[row]['v'+i];
+        	}
+        	
+        	return v;
+        }
+
+        function extractTransformationMatrix(data) {
+            const row  = data.findIndex(d => d.appId == appId);
+
+            transformationMatrix = new Array(actualAttributeCount1 + 1).fill(null).map(() => new Array(actualAttributeCount2 + 2).fill(0));    // one for original bias, one for transformed bias
+
+            for (let i = 0; i <= actualAttributeCount1; i++) {
+                for (let j = 0; j <= actualAttributeCount2 + 1; j++) {
+                    transformationMatrix[i][j] = data[row]['m'+i+'_'+j];
+                }
+            }
+
+            extraBias = new Array(actualAttributeCount1 + 1).fill(0);
+            for (let i = 0; i <= actualAttributeCount1; i++) {
+                extraBias[i] = data[row]['extraB'+i];
+            }
+
+            extraFactorBias = data[row]['delta_bw'];
+        }
+        
+        Papa.parse("./transferable-xai-app-featureset-attributes.csv", {
+        	download: true,
+        	header: true,
+        	dynamicTyping: true,
+        	complete: function(att_res) {
+        		attsDomain1 = extractAttributeNames(att_res.data, 0);
+                attsDomain2 = extractAttributeNames(att_res.data, 1);
+        		
+        		Papa.parse("./transferable-xai-featureset-models.csv", {
+        			download: true,
+        			header: true,
+        			dynamicTyping: true,
+        			complete: function(models_res) {
+        				globalModel = extractGlobalModel(models_res.data);
+                        
+        				Papa.parse("./transferable-xai-featureset-trials-data.csv", {
+        					download: true,
+        					header: true,
+        					dynamicTyping: true,
+        					complete: function(results) {
+        						instanceDomain1 = extractInstance(attsDomain1, globalModel, results.data, id, 0);
+        						instanceDomain2 = extractInstance(attsDomain2, globalModel, results.data, id, 1);
+        						
+        						Papa.parse("./transferable-xai-featureset-transformation-matrix.csv", {
+        							download: true,
+        							header: true,
+        							dynamicTyping: true,
+        							complete: function(matrix_results) {
+        								extractTransformationMatrix(matrix_results.data);
+        								
+        								// 所有数据加载完成后，开始渲染矩阵
+        								initializeMatrix();
+        							}
+        						});
+        					}
+        				});
+        			}
+        		});
+        	}
+        });
+
+        // 将所有矩阵渲染相关的代码移到这个函数中
+        function initializeMatrix() {
+            // ---------------- Render the matrix ---------------
+            
+            var rowTitle = transformType == "value" ? "Feature values 2" : "Feature factors 2";
+            var colTitle = transformType == "value" ? "Feature values 1" : "Feature factors 1";
+            
+            // Define the feature arrays
+            var featureSet1 = attsDomain1.a.map(str => str.replace(/\^3/g, '<sup>3</sup>'));
+            var featureSet2 = attsDomain2.a.map(str => str.replace(/\^3/g, '<sup>3</sup>'));
+            
+            var value1 = instanceDomain1;
+            var value2 = instanceDomain2;
+            var factor1 = globalModel.wDomain1;
+            var factor2 = globalModel.wDomain2;
+            var valueFactor1;
+            var valueFactor2;
+            
+            // Sample matrix data (m x n)
+            var matrixData = transformationMatrix;
+
+            var approxValue1 = new Array(value1.length);
+            var approxValue2 = new Array(value2.length);
+            var approxFactor1 = new Array(factor1.length);
+            var approxFactor2 = new Array(factor2.length);
+            var approxValueFactor1;
+            var approxValueFactor2;
+            var approxMatrixData;
+            var approxExtraBias;
+            var approxExtraFactorBias;
+
+            var commonFeatureCount;
+        
+            // global parameters: extraBias, extraFactorBias. Already extracted
+
+
+        function roundToPrecision(number, precision, sparse = false) {
+            if (Math.abs(number) >= 10) { //取整
+                return Math.round(number);
+            }
+            
+            let numberDecimal = Math.abs(number) >= 1 ? precision - 1 : precision;  // 有效数字中小数部分占的数量
+            //numberDecimal = numberDecimal > 3 ? 3 : numberDecimal;   // 矩阵的小数部分最多保留3位
+            numberApprox = Math.round(2 * number * Math.pow(10, numberDecimal - 1)) / 2 / Math.pow(10, numberDecimal - 1);
+            if (sparse) {
+                numberApprox = Math.abs(numberApprox) < 0.0025 ? 0 : numberApprox;
+            }
+            return numberApprox;
+        }
+
+        function approximateText() {
+            for (let i = 0; i < value1.length; i++) {
+                approxValue1[i] = roundToPrecision(value1[i], 3);
+            }
+            for (let i = 0; i < value2.length; i++) {
+                approxValue2[i] = roundToPrecision(value2[i], 3);
+            }
+            for (let i = 0; i < factor1.length; i++) {
+                approxFactor1[i] = roundToPrecision(factor1[i], 3);
+            }
+            for (let i = 0; i < factor2.length; i++) {
+                approxFactor2[i] = roundToPrecision(factor2[i], 3);
+            }
+            approxMatrixData = matrixData.map(row => row.map(value => roundToPrecision(value, precision, true)));
+            approxExtraBias = extraBias.map(value => roundToPrecision(value, precision, true));
+            approxExtraFactorBias = roundToPrecision(extraFactorBias, 3);
+        }
+
+        /**
+         * 对特征进行排序，相同特征排在最前面，不同特征排在后面
+         */
+        function sortFeatures() {
+            // 找到相同的特征
+            const commonFeatures = [];
+            const feature1Indices = [];
+            const feature2Indices = [];
+            
+            // 遍历featureSet1，找到在featureSet2中也存在的特征
+            for (let i = 0; i < featureSet1.length; i++) {
+                for (let j = 0; j < featureSet2.length; j++) {
+                    if (featureSet1[i] === featureSet2[j]) {
+                        commonFeatures.push(featureSet1[i]);
+                        feature1Indices.push(i);
+                        feature2Indices.push(j);
+                        break;
+                    }
+                }
+            }
+            commonFeatureCount = commonFeatures.length;
+            
+            // 找到featureSet1中独有的特征
+            const uniqueFeatures1 = [];
+            const uniqueIndices1 = [];
+            for (let i = 0; i < featureSet1.length; i++) {
+                if (!commonFeatures.includes(featureSet1[i])) {
+                    uniqueFeatures1.push(featureSet1[i]);
+                    uniqueIndices1.push(i);
+                }
+            }
+            
+            // 找到featureSet2中独有的特征
+            const uniqueFeatures2 = [];
+            const uniqueIndices2 = [];
+            for (let i = 0; i < featureSet2.length; i++) {
+                if (!commonFeatures.includes(featureSet2[i])) {
+                    uniqueFeatures2.push(featureSet2[i]);
+                    uniqueIndices2.push(i);
+                }
+            }
+            
+            // 构建排序后的特征数组
+            featureSet1 = [...commonFeatures, ...uniqueFeatures1];
+            featureSet2 = [...commonFeatures, ...uniqueFeatures2];
+            
+            // 构建索引映射
+            const feature1IndexMap = [...feature1Indices, ...uniqueIndices1];
+            const feature2IndexMap = [...feature2Indices, ...uniqueIndices2];
+
+            // Helper function to reorder a 1D array based on an index map
+            const reorderArray = (originalArr, indexMap) => {
+                const newArr = new Array(indexMap.length);
+                for (let i = 0; i < indexMap.length; i++) {
+                    newArr[i] = originalArr[indexMap[i]];
+                }
+                return newArr;
+            };
+
+            // Reorder value1, factor1, and extraBias based on feature1IndexMap
+            value1 = reorderArray(value1, feature1IndexMap);
+            factor1 = reorderArray(factor1, feature1IndexMap);
+            extraBias = reorderArray(extraBias, feature1IndexMap);
+
+            // Reorder value2 and factor2 based on feature2IndexMap
+            value2 = reorderArray(value2, feature2IndexMap);
+            factor2 = reorderArray(factor2, feature2IndexMap);
+
+            // 构建排序后的matrixData
+            const sortedMatrixData = [];
+            for (let i = 0; i < feature1IndexMap.length; i++) {
+                const originalRowIndex = feature1IndexMap[i];
+                const originalRow = matrixData[originalRowIndex];
+                
+                // Reorder columns within this row based on feature2IndexMap
+                const sortedRow = reorderArray(originalRow, feature2IndexMap);
+                sortedMatrixData.push(sortedRow);
+            }
+            matrixData = sortedMatrixData;
+        }
+        
+
+        function createMatrix() {
+            const m = featureSet1.length;
+            const n = featureSet2.length;
+            valueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
+            valueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
+            approxValueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
+            approxValueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
+            
+            const table = document.createElement('table');
+            table.className = 'matrix';
+            
+            // Create title row
+            const titleRow = table.insertRow();
+            
+            // Empty corner cells for title row
+            for (let i = 0; i < 3; i++) {
+                const titleCornerCell = titleRow.insertCell();
+                titleCornerCell.className = 'corner';
+                titleCornerCell.textContent = '';
+            }
+            
+            // Title spanning from column 3 to last column
+            const titleCell = titleRow.insertCell();
+            titleCell.className = 'title-cell';
+            titleCell.textContent = rowTitle;
+            titleCell.colSpan = n;
+            
+            // Create header row
+            const headerRow = table.insertRow();
+    
+            // Empty corner cells
+            for (let i = 0; i < 3; i++) {
+                const cornerCell = headerRow.insertCell();
+                cornerCell.className = 'corner';
+                cornerCell.textContent = '';
+            }
+            
+                         // headers as a row
+             for (let j = 0; j < n; j++) {
+                 const cell = headerRow.insertCell();
+                 cell.className = 'row-header';
+                 const span = document.createElement('span');
+                 span.className = 'row-header-text';
+                 span.innerHTML = featureSet2[j];
+                 cell.appendChild(span);
+             }
+    
+            // Add hidden column
+            const hiddenCell = headerRow.insertCell();
+            hiddenCell.className = 'hidden-column';
+            hiddenCell.textContent = '';
+    
+            // Add transfer adjustment column header
+            const transferHeaderCell = headerRow.insertCell();
+            transferHeaderCell.className = 'row-header';
+            const transferHeaderSpan = document.createElement('span');
+            transferHeaderSpan.className = 'row-header-text';
+            transferHeaderSpan.textContent = 'Base adjustment';
+            transferHeaderCell.appendChild(transferHeaderSpan);
+    
+            // Create value/factor row
+            const valueRow = table.insertRow();
+            // Empty corner cells
+            for (let i = 0; i < 3; i++) {
+                const cornerCell = valueRow.insertCell();
+                cornerCell.className = 'corner';
+                cornerCell.textContent = "";
+            }
+    
+                         for (let j = 0; j < n; j++) {
+                 const cell = valueRow.insertCell();
+                 cell.className = 'row-header-value';
+                 const span = document.createElement('span');
+                 span.className = 'row-header-value-text';
+                 span.textContent = valueFactor2[j];
+                 cell.appendChild(span);
+     
+                 if (transformType === "factor") {
+                     cell.addEventListener('mouseenter', function(event) {
+                         highlightRowAndColumns(-1, j, transformType);
+                         showFormula(j, event, transformType);
+                     });
+     
+                     cell.addEventListener('mouseleave', function() {
+                         clearHighlights();
+                         hideFormula();
+                     });
+                 }
+             }
+
+    
+            // Add hidden column value
+            const hiddenValueCell = valueRow.insertCell();
+            hiddenValueCell.className = 'hidden-column';
+            hiddenValueCell.textContent = '';
+    
+            // Add transfer adjustment column value (empty for this row)
+            const transferValueCell = valueRow.insertCell();
+            transferValueCell.className = 'row-header-value';
+            transferValueCell.textContent = transformType == 'value' ? 1 : approxExtraFactorBias;
+    
+            // Create matrix rows
+            const titleStart = Math.floor((m + 0.999)/2) - 1;
+            for (let i = 0; i < m; i++) {
+                const row = table.insertRow();
+    
+                if (i === titleStart) {
+                    const valueCell = row.insertCell();
+                    valueCell.className = 'title-column';
+                    const span = document.createElement('span');
+                    span.className = 'title-column-text';
+                    span.textContent = colTitle;
+                    valueCell.appendChild(span);
+                } else {
+                    const valueCell = row.insertCell();
+                    valueCell.className = 'title-column';
+                    valueCell.textContent = '';
+                }
+                
+                                 // Row label
+                const labelCell = row.insertCell();
+                labelCell.className = 'column-header';
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'column-header-text';
+                labelSpan.innerHTML = featureSet1[i];
+                labelCell.appendChild(labelSpan);
+     
+                const valueCell = row.insertCell();
+                valueCell.className = 'column-header-value';
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'column-header-value-text';
+                valueSpan.textContent = approxValueFactor1[i];
+                valueCell.appendChild(valueSpan);
+                if (transformType === "value") {
+                    valueCell.addEventListener('mouseenter', function(event) {
+                        highlightRowAndColumns(i, -1, transformType);
+                        showFormula(i, event, transformType);
+                    });
+    
+                    valueCell.addEventListener('mouseleave', function() {
+                        clearHighlights();
+                        hideFormula();
+                    });
+                }
+                
+                // Matrix values
+                for (let j = 0; j < n; j++) {
+                    const cell = row.insertCell();
+                    cell.className = 'matrix-value';
+                    if (i < commonFeatureCount && j < commonFeatureCount) {
+                        cell.classList.add('common-feature-area');
+                    }
+                    if (approxMatrixData[i][j] == 0) {
+                        cell.textContent = '';
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'matrix-value-text';
+                        span.textContent = (approxMatrixData[i][j] > 0 ? `×${approxMatrixData[i][j]}` : `×(${approxMatrixData[i][j]})`);
+                        cell.appendChild(span);
+                    }
+                    
+                    // Add hover event listeners
+                    cell.addEventListener('mouseenter', function(event) {
+                        highlightRowAndColumns(i, j, transformType);
+                        if (transformType === "value") {
+                            showFormula(i, event, transformType);
+                        } else {
+                            showFormula(j, event, transformType);
+                        }
+                    });
+                    
+                    cell.addEventListener('mouseleave', function() {
+                        clearHighlights();
+                        hideFormula();
+                    });
+                }
+    
+                // Add hidden column
+                const hiddenMatrixCell = row.insertCell();
+                hiddenMatrixCell.className = 'hidden-column';
+                hiddenMatrixCell.textContent = '';
+    
+                // Add transfer adjustment column with extraBias values
+                const transferMatrixCell = row.insertCell();
+                transferMatrixCell.className = 'matrix-value';
+                const span = document.createElement('span');
+                span.className = 'matrix-value-text';
+                span.textContent = approxExtraBias[i] == 0? '' : (approxExtraBias[i] > 0 ? `×${approxExtraBias[i]}` : `×(${approxExtraBias[i]})`);
+                transferMatrixCell.appendChild(span);
+    
+                // Add hover event listeners
+                transferMatrixCell.addEventListener('mouseenter', function(event) {
+                    highlightRowAndColumns(i, -1, transformType);
+                    if (transformType === "value") {
+                        showFormula(i, event, transformType);
+                    } else {
+                        showFormula(-1, event, transformType);
+                    }
+                });
+    
+                transferMatrixCell.addEventListener('mouseleave', function() {
+                    clearHighlights();  
+                    hideFormula();
+                });
+            }
+            
+            
+            document.getElementById('matrixContainer').appendChild(table);
+            
+            // Store table reference for highlighting functions
+            window.matrixTable = table;
+
+            
+            // Add toggle button to first row, first column
+            const firstRow = table.rows[2];
+            const firstCell = firstRow.cells[2];
+            firstCell.style.position = 'relative';
+            
+            // Create image button
+            const toggleButton = document.createElement('img');
+            toggleButton.src = 'ValueFactorButtion.png';
+            toggleButton.alt = `Current: ${transformType}`;
+            toggleButton.style.cssText = `
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border: none;
+                padding: 2px;
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+            `;
+            
+             // Add click event listener
+             toggleButton.addEventListener('click', function() {
+                 // Toggle transformType
+                 transformType = transformType === 'value' ? 'factor' : 'value';
+                 
+                 // Update button alt text
+                 toggleButton.alt = `Current: ${transformType}`;
+                 
+                 // Clear the matrix container
+                 document.getElementById('matrixContainer').innerHTML = '';
+                 
+                 // Recalculate approximate values for new transformType
+                 rowTitle = transformType == "value" ? "Feature values 2" : "Feature factors 2";
+                 colTitle = transformType == "value" ? "Feature values 1" : "Feature factors 1";
+                 valueFactor1 = transformType == "value" ? value1 : factor1;
+                 valueFactor2 = transformType == "value" ? value2 : factor2;
+                 approxValueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
+                 approxValueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
+                 
+                 // Recreate the matrix with new transformType
+                 createMatrix();
+             });
+            
+            // Replace the content of first cell with button
+            firstCell.innerHTML = '';
+            firstCell.appendChild(toggleButton);
+        }
+        
+        function highlightRowAndColumns(rowIndex, colIndex, transformType) {
+            const table = window.matrixTable;
+            if (!table) return;
+            
+            // Clear previous highlights
+            clearHighlights();
+            
+            if (transformType === "value") {
+                // Highlight the entire row (from column 3 to last)
+                const row = table.rows[rowIndex + 3]; // +3 because of title rows
+                for (let j = 2; j < row.cells.length; j++) {
+                    row.cells[j].classList.add('highlight-row');
+                }
+                
+                // Highlight columns where the row has non-zero values
+                for (let j = 0; j < approxMatrixData[rowIndex].length; j++) {
+                    if (approxMatrixData[rowIndex][j] !== 0) {
+                        const cell = table.rows[2].cells[j + 3];
+                        cell.classList.add('highlight-col');
+                    }
+                }
+                if (approxExtraBias[rowIndex] !== 0) {
+                    const row = table.rows[2];
+                    const cell = row.cells[row.cells.length - 1];
+                    cell.classList.add('highlight-row');
+                }
+            } else {
+                // Highlight the entire column (from row 3 to last) and the row where the column has non-zero values
+                const hightColIdx = colIndex == -1 ? table.rows[1].cells.length - 1 : colIndex + 3;
+                const col = table.rows[2].cells[hightColIdx];
+                col.classList.add('highlight-col');
+                for (let i = 0; i < approxMatrixData.length; i++) {
+                    const cell = table.rows[i + 3].cells[hightColIdx];
+                    cell.classList.add('highlight-col');
+                    // Highlight the row where the column has non-zero values
+                    if ((colIndex == -1 && approxExtraBias[i] !== 0) || (colIndex != -1 && approxMatrixData[i][colIndex] !== 0)) {
+                        const cell = table.rows[i + 3].cells[2];
+                        cell.classList.add('highlight-row');
+                    }
+                }
+            }
+        }
+        
+        function clearHighlights() {
+            const table = window.matrixTable;
+            if (!table) return;
+            
+            // Remove all highlight classes
+            const highlightedCells = table.querySelectorAll('.highlight-row, .highlight-col');
+            highlightedCells.forEach(cell => {
+                cell.classList.remove('highlight-row', 'highlight-col');
+            });
+        }
+        
+        function showFormula(rowOrColIndex, event, transformType) {
+            const tooltip = document.getElementById('formulaTooltip');
+            if (!tooltip) return;
+            
+            // Generate formula
+            const formula = generateFormula(rowOrColIndex, transformType);
+            tooltip.textContent = formula;
+            
+            // Position tooltip near mouse
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY - 10) + 'px';
+            tooltip.style.display = 'block';
+        }
+        
+        function hideFormula() {
+            const tooltip = document.getElementById('formulaTooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
+        }
+        
+        function generateFormula(rowOrColIndex, transformType) {
+            let formula = ``;
+            let terms = [];
+            
+            if (transformType === "value") {
+                // Check each column for non-zero values
+                for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
+                    if (approxMatrixData[rowOrColIndex][j] !== 0) {
+                        const matrixValue = approxMatrixData[rowOrColIndex][j];
+                        const headerValue = approxValueFactor2[j];
+                        
+                        if (formula.length > 0) {
+                            formula += `+ `;
+                        }
+                        formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
+                    }
+                }
+                if (approxExtraBias[rowOrColIndex] !== 0) {
+                    formula += `+ 1 × ` + (approxExtraBias[rowOrColIndex] >= 0 ? `${approxExtraBias[rowOrColIndex]}` : `(${approxExtraBias[rowOrColIndex]})`) + ` `;
+                }
+                
+                // RHS of the formula string
+                if (formula.length > 0) {
+                    formula += `≈ ${approxValueFactor1[rowOrColIndex]}\n`;
+                    formula += `Note: This calculation is an approximation and may involve minor errors.`;
+                }
+            } else {
+                // Check each row for non-zero values
+                if (rowOrColIndex == -1) {
+                    for (let i = 0; i < approxExtraBias.length; i++) {
+                        if (approxExtraBias[i] !== 0) {
+                            const matrixValue = approxExtraBias[i];
+                            const headerValue = approxValueFactor1[i];
+                            if (formula.length > 0) {
+                                formula += `+ `;
+                            }
+                            formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < approxMatrixData.length; i++) {
+                        if (approxMatrixData[i][rowOrColIndex] !== 0) {
+                            const matrixValue = approxMatrixData[i][rowOrColIndex];
+                            const headerValue = approxValueFactor1[i];
+                    
+                            if (formula.length > 0) {
+                                formula += `+ `;
+                            }
+                            formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
+                        }
+                    }
+                }
+    
+                // RHS of the formula string
+                if (formula.length > 0) {
+                    formula += rowOrColIndex != -1 ? `≈ ${approxValueFactor2[rowOrColIndex]}\n` : `≈ ${approxExtraFactorBias}\n`;
+                    formula += `Note: This calculation is an approximation and may involve minor errors.`;
+                }
+            }
+            
+            return formula;
+        }
+        
+        // Create the matrix when page loads
+        sortFeatures()
+        approximateText();
+        
+        createMatrix();
+        }
+        
+        // 页面加载时开始数据加载流程
+        window.onload = function() {
+            // 数据加载完成后会自动调用 initializeMatrix()
+        };
+    </script>
+</body>
+</html> 
