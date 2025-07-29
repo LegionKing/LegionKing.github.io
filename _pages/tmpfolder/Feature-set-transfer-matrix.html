@@ -14,6 +14,7 @@
             overflow: auto;
         }
         
+        .matrix td, .matrix th {font-family:Arial,sans-serif;font-size:14px;padding:5px 5px;}
         .matrix {
             display: inline-block;
             border-collapse: collapse;
@@ -26,8 +27,8 @@
          }
         
         .matrix td {
-            width: 70px;
-            height: 70px;
+            width: 58px;
+            height: 58px;
             border: 1px solid black;
             text-align: center;
             vertical-align: middle;
@@ -35,10 +36,10 @@
             /* overflow: visible; */
             /* white-space: nowrap; */
             box-sizing: border-box;
-            min-width: 70px;
-            max-width: 70px;
-            min-height: 70px;
-            max-height: 70px;
+            min-width: 58px;
+            max-width: 58px;
+            min-height: 58px;
+            max-height: 58px;
         }
 
         .matrix-value {
@@ -105,6 +106,10 @@
             display: inline-block;
             white-space: break-spaces;
             overflow: visible;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .column-header-text {
@@ -181,7 +186,7 @@
              min-width: 0;
              top: 50%;
              left: 50%;
-             transform: translate(-50%, -50%) rotate(-90deg);
+             transform: translate(-50%, 180%) rotate(-90deg);
          }
          
          /* 隐藏列样式 */
@@ -197,7 +202,6 @@
 
         /* 调整前几行 */
         .matrix tr:nth-child(1) td,
-        .matrix tr:nth-child(2) td,
         .matrix tr:nth-child(3) td {
             border: none;   /* 移除边框 */
             height: 30px;   /* 高度减少 */
@@ -205,8 +209,15 @@
             min-height: 35px;
             max-height: 35px;
         }
+        .matrix tr:nth-child(2) td {
+            border: none;   /* 移除边框 */
+            height: 50px;   /* 高度减少 */
+            vertical-align: bottom;   /* 文字下对齐 */
+            min-height: 35px;
+            max-height: 35px;
+        }
         
-                 /* 调整前三列 */
+        /* 调整前三列 */
          .matrix td:nth-child(1),
          .matrix td:nth-child(3) {
              border: none;    /* 移除边框 */
@@ -221,10 +232,10 @@
          .matrix td:nth-child(2) {
              border: none;    /* 移除边框 */
              transform-origin: center;
-             width: 80px;
+             width: 50px;
              text-align: bottom;    /* 文字下对齐 */
-             min-width: 80px;
-             max-width: 80px;
+             min-width: 50px;
+             max-width: 50px;
          }
          
          /* 共同特征区域样式 */
@@ -240,6 +251,30 @@
          .common-feature-area .column-header-value-text {
              color: #ccc !important;
          }
+          
+          /* 标题按钮样式 */
+          .title-button {
+              display: inline-block;
+              padding: 2px 6px;
+              margin: 0 2px;
+              border: 1px solid #ccc;
+              border-radius: 3px;
+              background-color: #f0f0f0;
+              cursor: pointer;
+              font-size: 12px;
+              transition: all 0.2s;
+          }
+          
+          .title-button:hover {
+              background-color: #e0e0e0;
+              border-color: #999;
+          }
+          
+          .title-button.selected {
+              background-color: #007bff;
+              color: white;
+              border-color: #0056b3;
+          }
     </style>
 </head>
 <body>
@@ -250,7 +285,7 @@
     <script> // -----------------Read data and set up variables ----------------
         const thousands = (n, precision, asK) => Number(n.toPrecision(precision)).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',') + (asK ? "k" : ""); // to show comma separation in numbers
         const percentage = (n, precision, asPercent) => thousands(n * 100, precision) + (asPercent ? '%' : '');
-        const category = (n) => n == 0 ? '0 (No)' : (n == 1 ? '1 (Yes)' : 'Invalid');
+        const category = (n) => Number(n) == 0 ? '0 (No)' : (Number(n) == 1 ? '1 (Yes)' : 'Invalid');
         
         /**
          * Read URL key-values to get condition and trial
@@ -304,7 +339,7 @@
         	row = appId_row;
         	
         	const maxAttributeCount = 8;
-        	const a = ["Base"];
+        	const a = ["Adjustment"];
         	for (actualAttributeCount = 1; actualAttributeCount <= maxAttributeCount; actualAttributeCount++) {
         		if ('a'+actualAttributeCount in data[row] && data[row]['a'+actualAttributeCount]?.trim()) {
         			a.push(data[row]['a'+actualAttributeCount]);
@@ -430,10 +465,11 @@
 
         // 将所有矩阵渲染相关的代码移到这个函数中
         function initializeMatrix() {
+            const category = (n) => n == 0 ? '0 (No)' : (n == 1 ? '1 (Yes)' : 'Invalid');
+
             // ---------------- Render the matrix ---------------
             
-            var rowTitle = transformType == "value" ? "Feature values 2" : "Feature factors 2";
-            var colTitle = transformType == "value" ? "Feature values 1" : "Feature factors 1";
+
             
             // Define the feature arrays
             var featureSet1 = attsDomain1.a.map(str => str.replace(/\^3/g, '<sup>3</sup>'));
@@ -469,12 +505,17 @@
                 return Math.round(number);
             }
             
-            let numberDecimal = Math.abs(number) >= 1 ? precision - 1 : precision;  // 有效数字中小数部分占的数量
-            //numberDecimal = numberDecimal > 3 ? 3 : numberDecimal;   // 矩阵的小数部分最多保留3位
-            numberApprox = Math.round(2 * number * Math.pow(10, numberDecimal - 1)) / 2 / Math.pow(10, numberDecimal - 1);
-            if (sparse) {
-                numberApprox = Math.abs(numberApprox) < 0.0025 ? 0 : numberApprox;
-            }
+            // 之前的版本，round到对应小数位数中取0或5最接近的值
+            // let numberDecimal = Math.abs(number) >= 1 ? precision - 1 : precision;  // 有效数字中小数部分占的数量
+            // //numberDecimal = numberDecimal > 3 ? 3 : numberDecimal;   // 矩阵的小数部分最多保留3位
+            // numberApprox = Math.round(2 * number * Math.pow(10, numberDecimal - 1)) / 2 / Math.pow(10, numberDecimal - 1);
+            // if (sparse) {
+            //     numberApprox = Math.abs(numberApprox) < 0.0025 ? 0 : numberApprox;
+            // }
+
+            // 简易版本，小数部分直接四舍五入到对应位数，同时不保留多余的0
+            numberApprox = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision);
+
             return numberApprox;
         }
 
@@ -486,14 +527,14 @@
                 approxValue2[i] = roundToPrecision(value2[i], 3);
             }
             for (let i = 0; i < factor1.length; i++) {
-                approxFactor1[i] = roundToPrecision(factor1[i], 3);
+                approxFactor1[i] = roundToPrecision(factor1[i], precision);
             }
             for (let i = 0; i < factor2.length; i++) {
-                approxFactor2[i] = roundToPrecision(factor2[i], 3);
+                approxFactor2[i] = roundToPrecision(factor2[i], precision);
             }
             approxMatrixData = matrixData.map(row => row.map(value => roundToPrecision(value, precision, true)));
             approxExtraBias = extraBias.map(value => roundToPrecision(value, precision, true));
-            approxExtraFactorBias = roundToPrecision(extraFactorBias, 3);
+            approxExtraFactorBias = roundToPrecision(extraFactorBias, precision);
         }
 
         /**
@@ -581,6 +622,7 @@
         function createMatrix() {
             const m = featureSet1.length;
             const n = featureSet2.length;
+            const categoricalAttributes = ['High blood pressure?', 'Chest pain?', 'Relative has diabetes?'];
             valueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
             valueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
             approxValueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
@@ -602,7 +644,7 @@
             // Title spanning from column 3 to last column
             const titleCell = titleRow.insertCell();
             titleCell.className = 'title-cell';
-            titleCell.textContent = rowTitle;
+            titleCell.innerHTML = 'Attribute 2 <span class="title-button" data-type="value">Values</span> <span class="title-button" data-type="factor">Factors</span>';
             titleCell.colSpan = n;
             
             // Create header row
@@ -615,7 +657,7 @@
                 cornerCell.textContent = '';
             }
             
-                         // headers as a row
+             // headers as a row
              for (let j = 0; j < n; j++) {
                  const cell = headerRow.insertCell();
                  cell.className = 'row-header';
@@ -635,7 +677,8 @@
             transferHeaderCell.className = 'row-header';
             const transferHeaderSpan = document.createElement('span');
             transferHeaderSpan.className = 'row-header-text';
-            transferHeaderSpan.textContent = 'Base adjustment';
+            transferHeaderSpan.textContent = 'Transfer adjustment';
+            transferHeaderSpan.style.transform = 'translate(-45%, -20%)';  // 微调，避免文字重叠
             transferHeaderCell.appendChild(transferHeaderSpan);
     
             // Create value/factor row
@@ -647,12 +690,12 @@
                 cornerCell.textContent = "";
             }
     
-                         for (let j = 0; j < n; j++) {
+             for (let j = 0; j < n; j++) {
                  const cell = valueRow.insertCell();
                  cell.className = 'row-header-value';
                  const span = document.createElement('span');
                  span.className = 'row-header-value-text';
-                 span.textContent = valueFactor2[j];
+                 span.textContent = (transformType == 'value' && categoricalAttributes.includes(featureSet2[j])) ? category(valueFactor2[j]) : valueFactor2[j];
                  cell.appendChild(span);
      
                  if (transformType === "factor") {
@@ -689,7 +732,7 @@
                     valueCell.className = 'title-column';
                     const span = document.createElement('span');
                     span.className = 'title-column-text';
-                    span.textContent = colTitle;
+                    span.innerHTML = 'Attribute 1 <span class="title-button" data-type="value">Values</span> <span class="title-button" data-type="factor">Factors</span>';
                     valueCell.appendChild(span);
                 } else {
                     const valueCell = row.insertCell();
@@ -697,7 +740,7 @@
                     valueCell.textContent = '';
                 }
                 
-                                 // Row label
+                // Row label
                 const labelCell = row.insertCell();
                 labelCell.className = 'column-header';
                 const labelSpan = document.createElement('span');
@@ -709,7 +752,7 @@
                 valueCell.className = 'column-header-value';
                 const valueSpan = document.createElement('span');
                 valueSpan.className = 'column-header-value-text';
-                valueSpan.textContent = approxValueFactor1[i];
+                valueSpan.textContent = (transformType == 'value' && categoricalAttributes.includes(featureSet1[i])) ? category(approxValueFactor1[i]) : approxValueFactor1[i];
                 valueCell.appendChild(valueSpan);
                 if (transformType === "value") {
                     valueCell.addEventListener('mouseenter', function(event) {
@@ -789,55 +832,24 @@
             
             // Store table reference for highlighting functions
             window.matrixTable = table;
-
             
-            // Add toggle button to first row, first column
-            const firstRow = table.rows[2];
-            const firstCell = firstRow.cells[2];
-            firstCell.style.position = 'relative';
+            // 按Prof要求，不展示Bias的行列，这里先隐藏
+            table.rows[3].style.display = 'none';
+            for (let i = 1; i < table.rows.length; i++) {
+                table.rows[i].cells[3].style.display = 'none';
+            }
             
-            // Create image button
-            const toggleButton = document.createElement('img');
-            toggleButton.src = 'ValueFactorButtion.png';
-            toggleButton.alt = `Current: ${transformType}`;
-            toggleButton.style.cssText = `
-                width: 30px;
-                height: 30px;
-                cursor: pointer;
-                border: none;
-                padding: 2px;
-                position: absolute;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-            `;
+            // Update button states and add click handlers
+            updateTitleButtonStates();
             
-             // Add click event listener
-             toggleButton.addEventListener('click', function() {
-                 // Toggle transformType
-                 transformType = transformType === 'value' ? 'factor' : 'value';
-                 
-                 // Update button alt text
-                 toggleButton.alt = `Current: ${transformType}`;
-                 
-                 // Clear the matrix container
-                 document.getElementById('matrixContainer').innerHTML = '';
-                 
-                 // Recalculate approximate values for new transformType
-                 rowTitle = transformType == "value" ? "Feature values 2" : "Feature factors 2";
-                 colTitle = transformType == "value" ? "Feature values 1" : "Feature factors 1";
-                 valueFactor1 = transformType == "value" ? value1 : factor1;
-                 valueFactor2 = transformType == "value" ? value2 : factor2;
-                 approxValueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
-                 approxValueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
-                 
-                 // Recreate the matrix with new transformType
-                 createMatrix();
-             });
-            
-            // Replace the content of first cell with button
-            firstCell.innerHTML = '';
-            firstCell.appendChild(toggleButton);
+            // Add click event handlers for title buttons
+            const titleButtons = table.querySelectorAll('.title-button');
+            titleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const buttonType = this.getAttribute('data-type');
+                    handleTitleButtonClick(buttonType);
+                });
+            });
         }
         
         function highlightRowAndColumns(rowIndex, colIndex, transformType) {
@@ -894,6 +906,37 @@
             });
         }
         
+        function updateTitleButtonStates() {
+            const buttons = document.querySelectorAll('.title-button');
+            buttons.forEach(button => {
+                const buttonType = button.getAttribute('data-type');
+                if (buttonType === transformType) {
+                    button.classList.add('selected');
+                } else {
+                    button.classList.remove('selected');
+                }
+            });
+        }
+        
+        function handleTitleButtonClick(newTransformType) {
+            if (newTransformType === transformType) return;
+            
+            transformType = newTransformType;
+            
+            // Clear the matrix container
+            document.getElementById('matrixContainer').innerHTML = '';
+            
+            // Recalculate approximate values for new transformType
+
+            valueFactor1 = transformType == "value" ? value1 : factor1;
+            valueFactor2 = transformType == "value" ? value2 : factor2;
+            approxValueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
+            approxValueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
+            
+            // Recreate the matrix with new transformType
+            createMatrix();
+        }
+        
         function showFormula(rowOrColIndex, event, transformType) {
             const tooltip = document.getElementById('formulaTooltip');
             if (!tooltip) return;
@@ -938,8 +981,7 @@
                 
                 // RHS of the formula string
                 if (formula.length > 0) {
-                    formula += `≈ ${approxValueFactor1[rowOrColIndex]}\n`;
-                    formula += `Note: This calculation is an approximation and may involve minor errors.`;
+                    formula += `≈ ${approxValueFactor1[rowOrColIndex]}`;
                 }
             } else {
                 // Check each row for non-zero values
@@ -970,8 +1012,7 @@
     
                 // RHS of the formula string
                 if (formula.length > 0) {
-                    formula += rowOrColIndex != -1 ? `≈ ${approxValueFactor2[rowOrColIndex]}\n` : `≈ ${approxExtraFactorBias}\n`;
-                    formula += `Note: This calculation is an approximation and may involve minor errors.`;
+                    formula += rowOrColIndex != -1 ? `≈ ${approxValueFactor2[rowOrColIndex]}` : `≈ ${approxExtraFactorBias}`;
                 }
             }
             

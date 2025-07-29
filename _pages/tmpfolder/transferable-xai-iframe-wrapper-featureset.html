@@ -9,7 +9,7 @@ Application <select id="input_appId">
   <option value="AirQuality">Air Quality</option>
 </select> |
 Case <input id="input_id" type="number" value="7" min="1" max="2000" size="2" maxlength="2"> (1-2000)
-Precision <input id="input_precision" type="number" value="2" min="2" max="5" size="2" maxlength="2"> (2-5)
+Precision <input id="input_precision" type="number" value="1" min="1" max="5" size="2" maxlength="2"> (1-5)
 <!--
 Domain <select id="input_domainId">
   <option value="0">Domain 1</option>
@@ -55,16 +55,16 @@ Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 		frameBorder="0" scrolling="no"
 		></iframe>
 
-<div>URL: <a id="text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframe')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframe')">Copy URL</button></div>
-<iframe id="interactiveIframe" 
-		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&showPrediction=1" 
+<div>URL: <a id="domain2_text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframeDomain2')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframeDomain2')">Copy URL</button></div>
+<iframe id="interactiveIframeDomain2" 
+		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&domainId=1&showPrediction=1" 
 		width="1280px" height="320px"
 		frameBorder="0" scrolling="no"
 		></iframe>
 
-<div>URL: <a id="domain2_text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframeDomain2')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframeDomain2')">Copy URL</button></div>
-<iframe id="interactiveIframeDomain2" 
-		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&domainId=1&showPrediction=1" 
+<div>URL: <a id="text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframe')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframe')">Copy URL</button></div>
+<iframe id="interactiveIframe" 
+		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&showPrediction=1" 
 		width="1280px" height="320px"
 		frameBorder="0" scrolling="no"
 		></iframe>
