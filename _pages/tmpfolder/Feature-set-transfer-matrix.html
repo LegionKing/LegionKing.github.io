@@ -186,7 +186,7 @@
              min-width: 0;
              top: 50%;
              left: 50%;
-             transform: translate(-50%, 180%) rotate(-90deg);
+             transform: translate(-50%, 120%) rotate(-90deg);
          }
          
          /* 隐藏列样式 */
@@ -319,6 +319,7 @@
         const vec_elementwise_product = (vec, vec2) => vec.map((el, i) => el * vec2[i]);
         const vec_dot_product = (vec, vec2) => vec_sum(vec_elementwise_product(vec, vec2));
         
+        const categoricalAttributes = ['High blood pressure?', 'Chest pain?', 'Relative has diabetes?'];
         var actualAttributeCount1 = 5;  // number of attributes in domain 1, bias excluded. Will be updated
         var actualAttributeCount2 = 5;  // number of attributes in domain 2, bias excluded. Will be updated
         var globalModel;
@@ -468,9 +469,6 @@
             const category = (n) => n == 0 ? '0 (No)' : (n == 1 ? '1 (Yes)' : 'Invalid');
 
             // ---------------- Render the matrix ---------------
-            
-
-            
             // Define the feature arrays
             var featureSet1 = attsDomain1.a.map(str => str.replace(/\^3/g, '<sup>3</sup>'));
             var featureSet2 = attsDomain2.a.map(str => str.replace(/\^3/g, '<sup>3</sup>'));
@@ -622,7 +620,6 @@
         function createMatrix() {
             const m = featureSet1.length;
             const n = featureSet2.length;
-            const categoricalAttributes = ['High blood pressure?', 'Chest pain?', 'Relative has diabetes?'];
             valueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
             valueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
             approxValueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
@@ -677,7 +674,7 @@
             transferHeaderCell.className = 'row-header';
             const transferHeaderSpan = document.createElement('span');
             transferHeaderSpan.className = 'row-header-text';
-            transferHeaderSpan.textContent = 'Transfer adjustment';
+            transferHeaderSpan.textContent = 'Adjustment change';
             transferHeaderSpan.style.transform = 'translate(-45%, -20%)';  // 微调，避免文字重叠
             transferHeaderCell.appendChild(transferHeaderSpan);
     
@@ -964,10 +961,12 @@
             
             if (transformType === "value") {
                 // Check each column for non-zero values
+                var calculateResult = 0;
                 for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
                     if (approxMatrixData[rowOrColIndex][j] !== 0) {
                         const matrixValue = approxMatrixData[rowOrColIndex][j];
                         const headerValue = approxValueFactor2[j];
+                        calculateResult += matrixValue * headerValue;
                         
                         if (formula.length > 0) {
                             formula += `+ `;
@@ -976,12 +975,17 @@
                     }
                 }
                 if (approxExtraBias[rowOrColIndex] !== 0) {
+                    calculateResult += approxExtraBias[rowOrColIndex];
                     formula += `+ 1 × ` + (approxExtraBias[rowOrColIndex] >= 0 ? `${approxExtraBias[rowOrColIndex]}` : `(${approxExtraBias[rowOrColIndex]})`) + ` `;
                 }
                 
                 // RHS of the formula string
                 if (formula.length > 0) {
-                    formula += `≈ ${approxValueFactor1[rowOrColIndex]}`;
+                    if (categoricalAttributes.includes(featureSet1[rowOrColIndex])) {
+                        formula += `= ${calculateResult.toFixed(2)} ` + (calculateResult >= 0.5 ? `≥` : `<`) + ` 0.5 ` + `→ ${category(approxValueFactor1[rowOrColIndex])}`;
+                    } else {
+                        formula += `≈ ${approxValueFactor1[rowOrColIndex]}`;
+                    }
                 }
             } else {
                 // Check each row for non-zero values

@@ -102,13 +102,6 @@
         <td class="tg-lboi" rowspan="8" id="td_brace">}</td>     <!-- the rowspan number will be updated by generateAttributeRows() -->
         <td class="tg-lboi" rowspan="8" id="td_calc_ye">+</td>
         <td class="tg-lboi" rowspan="8">&rarr;</td>
-    	<td class="tg-lboi" rowspan="8" id="td_sum_comp">
-    		<table class="tg" border="0">
-    			<tr><th class="tg-c3ow"><span> Risk Score</span></tr>
-    			<tr><td class="tg-c3ow3" style="border-color:#2e8112"><span id="text_sum">sum</span> <span id="text_sum_comp" style="font-weight:bold;">></span> 0</td></tr>
-    			<tr><td class="tg-c3ow">&nbsp;</td></tr>
-    		</table></td>
-    	<td class="tg-lboi" rowspan="8" id="sum_comp_arrow">&rarr;</td>
         <td class="tg-lboi" rowspan="8" id="td_yExplain">
     	  <table class="tg" border="0">
     	    <tr class="tutorialRow"><th class="tg-c3ow"><span class="tutorial" id="tutorial5">6</span></th></tr>
@@ -176,7 +169,7 @@
         //     alert('This script is only for transferable XAI.');
         //     return;   // 这个return不符合语法
         // }
-        const xaiType = 'transferable';
+        const xaiType = urlParams.get('xaiType');
 
         const appId = urlParams.get('appId');
         const id = Number(urlParams.get('id'));
@@ -288,12 +281,12 @@
         		w[i] = domainId == 0 ? globalModel.wDomain1[i] : globalModel.wDomain2[i];
         		yPartial[i] = v[i] * w[i];
         	}
-            w[0] = globalModel.wDomain1[0];  // even when domainId == 1, w0 is the bias of domain 1, because need to show the extra bias term 
+            w[0] = xaiType == 'transferable' ? globalModel.wDomain1[0] : globalModel.wDomain2[0];  // when trasferable,even domainId == 1, w0 is the bias of domain 1, because need to show the extra bias term 
         	const yExplain = vec_sum(yPartial);
 
             yAI = data[row]['y_ai'];
             //const dy = xaiType == 'none' ? 0 : (ye - y) / atts.y_max;
-            const dy = xaiType == 'none' ? 0 : (yExplain - yAI) / yAI;
+            const dy = xaiType == 'none' ? 0 : (appType == 'classification' ? (yExplain - yAI) / 100 : (yExplain - yAI) / yAI);
 
             return {
             	v: v,
@@ -402,13 +395,11 @@
 
                 if (domainId == 0) {
                 	wi0 = instance.w[i];
-                	// document.getElementById('text_' + 'w'+i).innerHTML = atts.appType == 'classification' ? percentage(wi0, precision, true) : thousands(wi0, precision, false);    // previous version for classification
                 	document.getElementById('text_' + 'w'+i).innerHTML = roundToPrecision(wi0, precision, false);
                 } else {
                 	wi1 = instance.w[i];
                 	const element = document.getElementById('text_' + 'w'+i+'.1');
-                	// element.innerHTML = atts.appType == 'classification' ? percentage(wi1, precision, true) : thousands(wi1, precision, false);    // previous version for classification
-                    if (i == 0) {
+                    if (xaiType == 'transferable' && i == 0) {
                         element.innerHTML = roundToPrecision(wi1, precision, false) + (extraFactorBias > 0 ? " + " : "") + roundToPrecision(extraFactorBias, precision, false);
                     } else {
                         element.innerHTML = roundToPrecision(wi1, precision, false);
@@ -433,10 +424,8 @@
                 }
 
                 // whether to show yPartial
-                // document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? '?' : (atts.appType == 'classification' ? percentage(instance.yPartial[i], precision, true) : thousands(instance.yPartial[i], precision, false));  // previous version for classification
-                // document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? "?" : (atts.appType == 'classification' ? percentage(instance.yPartial[i], 5, true) : thousands(instance.yPartial[i], 5, false));  // previous version for classification
                 document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? '?' : roundToPrecision(instance.yPartial[i], precision, false);
-                document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? "?" : roundToPrecision(instance.yPartial[i], 5, false);
+                document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? "?" : instance.yPartial[i].toFixed(3);
             }
 
             /* ====================== Set factors header ======================== */
@@ -452,7 +441,7 @@
             /* ====================== Set y unit and y unit name ======================== */
             const text_y_unit = atts.y_unit == undefined ? '' : "(" + atts.y_unit.replace(/\^3/g, '<sup>3</sup>') + ")";
             const targetDomainName = xaiType == 'transferable' ? (domainId == 0 ? globalModel.domain1Name : globalModel.domain2Name) : globalModel.domainName;
-            Array.from(document.querySelectorAll('[id="text_y_unitName"]')).forEach(el => el.innerHTML = (atts.appType == 'classification' ? 'Have ' + targetDomainName + '?' : (atts.y_unitName + " " + text_y_unit)));
+            Array.from(document.querySelectorAll('[id="text_y_unitName"]')).forEach(el => el.innerHTML = atts.y_unitName + " " + text_y_unit);
             document.getElementById('text_y_unitName_partial').innerHTML = atts.y_unitName + " " + text_y_unit;
             
             // 检查text_y_unitName的行数并调整transform
@@ -460,21 +449,11 @@
 
             /* ====================== Set yExplain, yAI and dy ======================== */
             const text_ye = document.getElementById('text_' + 'yExplain');
-            // text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : (atts.appType == 'classification' ? percentage(instance.yExplain, 3, false) : thousands(instance.yExplain, 3, false));    // previous version for classification
-            // text_ye.title = xaiType == 'none' || hideFactor == -2 ? "?" : (atts.appType == 'classification' ? percentage(instance.yExplain, 5, false) : thousands(instance.yExplain, 5, false));  // previous version for classification
-            text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : (atts.appType == 'classification' ? (instance.yExplain < 0 ? 'No' : 'Yes') : thousands(instance.yExplain, 3, false));
-            
-            // Set text_sum to yExplain value
-            const text_sum = document.getElementById('text_sum');
-            text_sum.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : thousands(instance.yExplain, 3, false);
-            text_sum.title = xaiType == 'none' || hideFactor == -2 ? "?" : thousands(instance.yExplain, 5, false);
-            const text_sum_comp = document.getElementById('text_sum_comp');
-            text_sum_comp.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : (instance.yExplain > 0 ? '&ge;' : '<');
-            
-            // document.getElementById('text_' + 'yAI').innerHTML = showPrediction ? (atts.appType == 'classification' ? percentage(instance.yAI, 3, false) : thousands(instance.yAI, 3, false)) : '?';  // previous version for classification
-            // document.getElementById('text_' + 'yAI').title = showPrediction ? (atts.appType == 'classification' ? percentage(instance.yAI, 5, false) : thousands(instance.yAI, 5, false)) : '?';  // previous version for classification
-            document.getElementById('text_' + 'yAI').innerHTML = showPrediction ? (atts.appType == 'classification' ? (instance.yAI > 0.5 ? 'Yes' : 'No') : thousands(instance.yAI, 3, false)) : '?';
-            document.getElementById('text_' + 'yAI').title = showPrediction ? (atts.appType == 'classification' ? (instance.yAI > 0.5 ? 'Yes' : 'No') : thousands(instance.yAI, 5, false)) : '?';
+            text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : roundToPrecision(instance.yExplain, 1, false);
+            text_ye.title = xaiType == 'none' || hideFactor == -2 ? '?' : instance.yExplain.toFixed(3);
+
+            document.getElementById('text_' + 'yAI').innerHTML = showPrediction ? roundToPrecision(instance.yAI, 1, false): '?';
+            document.getElementById('text_' + 'yAI').title = showPrediction ? instance.yAI.toFixed(3) : '?';
             	
             renderDyUI(instance.dy);
 
@@ -524,20 +503,11 @@
             	// 隐藏Bias行
             	document.getElementById('text_a0').style.display = 'none';
             
-            	// 隐藏sum_comp列
-            	const sumCompCell = document.getElementById('td_sum_comp');
-            	if (sumCompCell) {
-            		sumCompCell.style.display = 'none';
-            	}
-            	document.getElementById('sum_comp_arrow').style.display = 'none';
-            
             } else {
             	// 正常显示逻辑
             	Array.from(document.getElementsByClassName('showDomain1')).forEach(el => el.style.display = showDomain1 ? 'revert' : 'none');
             	Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = showDomain2 ? 'revert' : 'none');
             	Array.from(document.getElementsByClassName('showTransfer')).forEach(el => el.style.display = showTransfer ? 'revert' : 'none');
-            	document.getElementById('td_sum_comp').style.display = atts.appType == 'regression' ? 'none' : 'revert';
-            	document.getElementById('sum_comp_arrow').style.display = atts.appType == 'regression' ? 'none' : 'revert';
             }
 
             /* ====================== Set tutorial visibility ======================== */
@@ -784,16 +754,6 @@
         }
         
         function renderDyUI(dy) {
-        	if (atts.appType == 'classification') {
-        		// 当appType为classification时，使text_dy不可见
-        		document.getElementById('text_' + 'dy').style.visibility = 'hidden';
-        		const textDyInequality = document.getElementById('text_' + 'dy_inequality');
-        		// 读取text_yAI和text_yExplain的值，如果相同，则textDyInequality为"="，否则为"≠"
-        		const textYAI = document.getElementById('text_' + 'yAI');
-        		const textYExplain = document.getElementById('text_' + 'yExplain');
-        		textDyInequality.innerHTML = (!showPrediction || hideFactor != -1) ? "?" : textYAI.innerHTML == textYExplain.innerHTML ? "=" : "≠";
-        		return;
-        	}
         	const abs_dy = Math.abs(dy);
         	document.getElementById('text_' + 'dy').innerHTML = !showPrediction ? "?" : thousands((abs_dy) * 100, 2) + '%';
         	document.getElementById('text_' + 'dy').title = !showPrediction ? "?" : thousands((abs_dy) * 100, 4) + '%';
@@ -844,19 +804,10 @@
         		ye += calculateYi(i);
         	}
         	const text_ye = document.getElementById('text_' + 'yExplain');
-        	// text_ye.innerHTML = appType == 'classification' ? percentage(ye, 3, false) : thousands(ye, 3, false);  // previous version for classification
-        	// text_ye.title = appType == 'classification' ? percentage(ye, 5, false) : thousands(ye, 5, false);  // previous version for classification
-        	text_ye.innerHTML = appType == 'classification' ? (ye < 0 ? 'No' : 'Yes') : thousands(ye, 3, false);
-        	text_ye.title = appType == 'classification' ? (ye > 0 ? 'No' : 'Yes') : thousands(ye, 5, false);
-        
-        	// This is for classification only, invisible for regression
-        	const text_sum = document.getElementById('text_sum');
-        	text_sum.innerHTML = thousands(ye, 3, false);
-        	text_sum.title = thousands(ye, 5, false);
-        	const text_sum_comp = document.getElementById('text_sum_comp');
-        	text_sum_comp.innerHTML = ye < 0 ? '<' : '&ge;';
+        	text_ye.innerHTML = roundToPrecision(ye, 3, false);
+        	text_ye.title = roundToPrecision(ye, 5, false);
         	
-        	dy = (ye - yAI) / yAI;
+        	dy = appType == 'classification' ? (ye - yAI) / 100 : (ye - yAI) / yAI;
         	renderDyUI(dy);
         }
         const calculateYi = function(i) {
