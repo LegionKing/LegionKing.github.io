@@ -1,0 +1,129 @@
+<html>
+<head>
+</head>
+
+<body>
+<div>
+Application <select id="input_appId">
+  <option value="NHANES">NHANES</option>
+  <option value="AirQuality">Air Quality</option>
+</select> |
+Case <input id="input_id" type="number" value="7" min="1" max="2000" size="2" maxlength="2"> (1-2000)
+Domain <select id="input_domainId">
+  <option value="0">Domain 1</option>
+  <option value="1">Domain 2</option>
+	</select>
+<br/>
+XAI Type <select id="input_xaiType">
+  <option value="transferable">Transferable</option>
+  <option value="isolated">Isolated XAI</option>
+  <option value="none">None</option>
+</select> |
+Tutorial <select id="input_tutorial">
+  <option value="-2">Only Explainer (-2)</option>
+  <option value="-1">All (-1)</option>
+  <option value="0" selected>None (0)</option>
+  <option value="1">Attributes (1)</option>
+  <option value="2">Values (2)</option>
+  <option value="3">Factors (3)</option>
+  <option value="4">Partial Score (4)</option>
+  <option value="5">AI Explainer (5)</option>
+  <option value="6">AI System (6)</option>
+  <option value="7">Diff from y (7)</option>
+</select> |
+Hide Factor <select id="input_hideFactor">
+  <option value="-4">Only AI (-4)</option>
+  <option value="-3">Edit (-3)</option>
+  <option value="-2">All (-2)</option>
+  <option value="-1" selected>None (-1)</option>
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+</select> |
+Edit Values <input id="input_editValues" type="checkbox" /> |
+Show Prediction <input id="input_showPrediction" type="checkbox" checked />
+</div>
+
+<div>URL: <a id="text_url" href=""></a> <button onclick="copyIframeHtml()">Copy Iframe</button> <button onclick="copyUrl()">Copy URL</button></div>
+<iframe id="interactiveIframe" 
+		src="transferable-xai-ui-task.html?appId=NHANES&xaiType=transferable&domainId=1&id=7&hideFactor=-1&editValues=0&tutorial=0&showPrediction=1" 
+		width="1280px" height="320px"
+		frameBorder="0" scrolling="no"
+		></iframe>
+
+<script>
+let url = "";
+const urlRoot = "http://127.0.0.1:5500/";
+const htmlName = "transferable-xai-ui-task.html";
+let tutorial = 0;
+
+function updateIframeUrl(iframeId) {
+	const appId = document.querySelector("#input_appId").value;
+	const id = document.querySelector("#input_id").value;
+	const domainId = document.querySelector("#input_domainId").value;
+	const xaiType = document.querySelector("#input_xaiType").value;
+	const tutorial = document.querySelector("#input_tutorial").value;
+	const hideFactor = document.querySelector("#input_hideFactor").value;
+	const editValues = document.querySelector("#input_editValues").checked ? 1 : 0;
+	const showPrediction = document.querySelector("#input_showPrediction").checked ? 1 : 0;
+	
+	const iframe = document.querySelector("#interactiveIframe");
+	url = htmlName+"?appId="+appId+"&id="+id+"&domainId="+domainId+"&xaiType="+xaiType+"&tutorial="+tutorial+"&hideFactor="+hideFactor+"&editValues="+editValues+"&showPrediction="+showPrediction;
+	iframe.src = url;
+	if (tutorial != 0) { iframe.height = '350px'; }
+	else if ((hideFactor != 0 || xaiType == 'none') && tutorial == 0) { iframe.height = '320px'; }
+	else { iframe.height = '320px'; }
+		
+	document.querySelector("#text_url").href = url;
+	document.querySelector("#text_url").innerHTML = url;
+}
+
+function updateId() {
+	const input_id = document.querySelector("#input_id");
+	let id = input_id.value;
+	id = id < 1 ? 1 : id;
+	id = id > 2000 ? 2000 : id;
+	input_id.value = id;
+	updateIframeUrl();
+}
+function updateIdTyping(e) {
+	const input_id = document.querySelector("#input_id");
+	let id = input_id.value;
+	
+	if (e.key == 'Enter') {
+		return;
+	}
+	else if (isNaN(parseInt(e.key)) || id.toString().length >= 4) { // invalid typing to revert to previous number
+		event.preventDefault()
+		input_id.value = id; 
+	} 
+}
+
+function copyIframeHtml() {
+	let html = document.querySelector("#interactiveIframe").outerHTML;
+	html = html.replace("src=\"", "src=\"" + urlRoot);
+	html = html.replaceAll("&amp;", "&");
+	html = html.replaceAll("id=\"interactiveIframe\" ", "");
+	navigator.clipboard.writeText(html);
+}
+function copyUrl() {
+	navigator.clipboard.writeText(urlRoot + url);
+}
+
+document.querySelector("#input_appId").onchange = updateIframeUrl;
+document.querySelector("#input_id").onchange = updateId;
+document.querySelector("#input_id").onkeypress = updateIdTyping;
+document.querySelector("#input_domainId").onchange = updateIframeUrl;
+document.querySelector("#input_xaiType").onchange = updateIframeUrl;
+document.querySelector("#input_tutorial").onchange = updateIframeUrl;
+document.querySelector("#input_hideFactor").onchange = updateIframeUrl;
+document.querySelector("#input_editValues").onchange = updateIframeUrl;
+document.querySelector("#input_showPrediction").onchange = updateIframeUrl;
+
+updateIframeUrl();
+</script>
+
+</body>
+
+</html>
