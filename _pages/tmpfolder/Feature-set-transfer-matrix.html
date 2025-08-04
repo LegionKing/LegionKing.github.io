@@ -513,10 +513,28 @@
 
             // 简易版本，小数部分直接四舍五入到对应位数，同时不保留多余的0
             numberApprox = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision);
+            if (!sparse && numberApprox == 0) {
+                numberApprox = number.toPrecision(1);
+            }
 
             return numberApprox;
         }
 
+        function matrixApprox(number) {
+            if (Math.abs(number) >= 10) { //取整
+                return Math.round(number);
+            }
+
+            // 简易版本，小数部分直接四舍五入到对应位数，同时不保留多余的0
+            numberApprox = Math.round(number * Math.pow(10, 1)) / Math.pow(10, 1);  // 默认保留1位小数
+            if (number < 0.05 && number >= 0.005) {
+                numberApprox = Math.round(number * Math.pow(10, 2)) / Math.pow(10, 2);  // 保留2位小数
+            }
+
+            return numberApprox;
+        }
+
+        
         function approximateText() {
             for (let i = 0; i < value1.length; i++) {
                 approxValue1[i] = roundToPrecision(value1[i], 3);
@@ -530,9 +548,62 @@
             for (let i = 0; i < factor2.length; i++) {
                 approxFactor2[i] = roundToPrecision(factor2[i], precision);
             }
-            approxMatrixData = matrixData.map(row => row.map(value => roundToPrecision(value, precision, true)));
-            approxExtraBias = extraBias.map(value => roundToPrecision(value, precision, true));
+
+            // Old version
+            // approxMatrixData = matrixData.map(row => row.map(value => matrixApprox(value)));
+            // approxExtraBias = extraBias.map(value => matrixApprox(value));
+            // approxExtraFactorBias = roundToPrecision(extraFactorBias, precision);
+
+            // New version
+            function roundByLastDecimal(num) {
+                const approxNum = Number(roundToPrecision(num, 1, false));
+                const str = approxNum.toString();
+            
+                // 判断是否有小数部分
+                if (!str.includes('.')) {
+                    return approxNum;
+                }
+            
+                // 拆分整数和小数部分
+                const [intPart, decPart] = str.split('.');
+                const decimalPlaces = decPart.length;
+                const lastDigit = parseInt(decPart[decimalPlaces - 1], 10);
+            
+                let result = approxNum;
+                if (decPart.length > 1 && lastDigit >= 5) {
+                    // 保留 decimalPlaces - 1 位并四舍五入
+                    result = Number(approxNum.toFixed(decimalPlaces - 1));
+                }
+            
+                return result;
+            }
+            
+            // 近似matrix值
+            approxMatrixData = matrixData.map(row => row.map(value => 0));   // 默认值为0
+            const threshold = 0.2;
+            for (let i = 0; i < matrixData.length; i++) {
+                for (let j = 0; j < matrixData[i].length; j++) {
+                    if (Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * matrixData[i][j] / factor2[j]) > threshold) {
+                        approxMatrixData[i][j] = roundByLastDecimal(matrixData[i][j]);
+                    }
+                    else {
+                        approxMatrixData[i][j] = 0   // roundToPrecision(matrixData[i][j], 1, true);
+                    }
+                }
+            }
+            // 近似extraBias
+            approxExtraBias = extraBias.map(value => 0);
+            for (let i = 0; i < extraBias.length; i++) {
+                if (Math.abs(extraBias[i] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * extraBias[i] / extraFactorBias) > threshold) {
+                    approxExtraBias[i] = roundByLastDecimal(extraBias[i]);
+                }
+                else {
+                    approxExtraBias[i] = 0   // roundToPrecision(extraBias[i], 1, true);
+                }
+            }
+            // 近似extraFactorBias
             approxExtraFactorBias = roundToPrecision(extraFactorBias, precision);
+            
         }
 
         /**
@@ -641,7 +712,7 @@
             // Title spanning from column 3 to last column
             const titleCell = titleRow.insertCell();
             titleCell.className = 'title-cell';
-            titleCell.innerHTML = 'Attribute 2 <span class="title-button" data-type="value">Values</span> <span class="title-button" data-type="factor">Factors</span>';
+            titleCell.innerHTML = 'Attributes 2 <span class="title-button" data-type="value">Values</span> <span class="title-button" data-type="factor">Factors</span>';
             titleCell.colSpan = n;
             
             // Create header row
@@ -729,7 +800,7 @@
                     valueCell.className = 'title-column';
                     const span = document.createElement('span');
                     span.className = 'title-column-text';
-                    span.innerHTML = 'Attribute 1 <span class="title-button" data-type="value">Values</span> <span class="title-button" data-type="factor">Factors</span>';
+                    span.innerHTML = 'Attributes 1 <span class="title-button" data-type="value">Values</span> <span class="title-button" data-type="factor">Factors</span>';
                     valueCell.appendChild(span);
                 } else {
                     const valueCell = row.insertCell();
@@ -960,7 +1031,7 @@
             let terms = [];
             
             if (transformType === "value") {
-                // Check each column for non-zero values
+                formula += `${approxValueFactor1[rowOrColIndex]} ≈ `;
                 var calculateResult = 0;
                 for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
                     if (approxMatrixData[rowOrColIndex][j] !== 0) {
@@ -968,7 +1039,7 @@
                         const headerValue = approxValueFactor2[j];
                         calculateResult += matrixValue * headerValue;
                         
-                        if (formula.length > 0) {
+                        if (formula[formula.length - 2] != '≈') {
                             formula += `+ `;
                         }
                         formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
@@ -978,15 +1049,38 @@
                     calculateResult += approxExtraBias[rowOrColIndex];
                     formula += `+ 1 × ` + (approxExtraBias[rowOrColIndex] >= 0 ? `${approxExtraBias[rowOrColIndex]}` : `(${approxExtraBias[rowOrColIndex]})`) + ` `;
                 }
-                
-                // RHS of the formula string
-                if (formula.length > 0) {
-                    if (categoricalAttributes.includes(featureSet1[rowOrColIndex])) {
-                        formula += `= ${calculateResult.toFixed(2)} ` + (calculateResult >= 0.5 ? `≥` : `<`) + ` 0.5 ` + `→ ${category(approxValueFactor1[rowOrColIndex])}`;
-                    } else {
-                        formula += `≈ ${approxValueFactor1[rowOrColIndex]}`;
-                    }
+
+                if (categoricalAttributes.includes(featureSet1[rowOrColIndex])) {
+                    formula += `= ${calculateResult.toFixed(2)} ` + (calculateResult >= 0.5 ? `≥` : `<`) + ` 0.5 ` + `→ ${category(approxValueFactor1[rowOrColIndex])}`;
                 }
+
+                // old version, attributes 1 on the RHS
+                // var calculateResult = 0;
+                // for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
+                //     if (approxMatrixData[rowOrColIndex][j] !== 0) {
+                //         const matrixValue = approxMatrixData[rowOrColIndex][j];
+                //         const headerValue = approxValueFactor2[j];
+                //         calculateResult += matrixValue * headerValue;
+                        
+                //         if (formula.length > 0) {
+                //             formula += `+ `;
+                //         }
+                //         formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
+                //     }
+                // }
+                // if (approxExtraBias[rowOrColIndex] !== 0) {
+                //     calculateResult += approxExtraBias[rowOrColIndex];
+                //     formula += `+ 1 × ` + (approxExtraBias[rowOrColIndex] >= 0 ? `${approxExtraBias[rowOrColIndex]}` : `(${approxExtraBias[rowOrColIndex]})`) + ` `;
+                // }
+                
+                // // RHS of the formula string
+                // if (formula.length > 0) {
+                //     if (categoricalAttributes.includes(featureSet1[rowOrColIndex])) {
+                //         formula += `= ${calculateResult.toFixed(2)} ` + (calculateResult >= 0.5 ? `≥` : `<`) + ` 0.5 ` + `→ ${category(approxValueFactor1[rowOrColIndex])}`;
+                //     } else {
+                //         formula += `≈ ${approxValueFactor1[rowOrColIndex]}`;
+                //     }
+                // }
             } else {
                 // Check each row for non-zero values
                 if (rowOrColIndex == -1) {

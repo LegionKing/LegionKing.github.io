@@ -208,6 +208,10 @@
         var extraFactorBias;
         var transformType = "value";  // "value" or "factor"
 
+        var actualAttributeCount;
+        var instance;
+        var atts;
+
         function extractAttributeNames(data, localDomainId) {	
         	const appId_row = data.findIndex(d => d.appId == appId && d.domainId == localDomainId); // get row that has id
         	//console.log('appId_row', appId_row);	
@@ -351,12 +355,10 @@
             sortFeatures()
 
             var commonFeatureCount;
-            const actualAttributeCount = domainId == 0 ? actualAttributeCount1 : actualAttributeCount2;  // number of attributes, bias excluded. Will be updated
+            actualAttributeCount = domainId == 0 ? actualAttributeCount1 : actualAttributeCount2;  // number of attributes, bias excluded. Will be updated
             let yAI;
-            const instance = domainId == 0 ? instanceDomain1 : instanceDomain2;
-            const appType = instance.appType;
-            const y_unitName = instance.y_unitName;
-            const atts = domainId == 0 ? attsDomain1 : attsDomain2;
+            instance = domainId == 0 ? instanceDomain1 : instanceDomain2;
+            atts = domainId == 0 ? attsDomain1 : attsDomain2;
 
             /* ====================== Generate dynamic attribute rows ======================== */
             generateAttributeRows();
@@ -373,7 +375,7 @@
             	nextCells[i].rowSpan = totalRows;
             }
 
-            /* ====================== Set attribute values and weights ======================== */
+            /* ====================== Set attribute values, weights and yPartial ======================== */
             for (let i = 0; i <= actualAttributeCount; i++) {
             	document.getElementById('text_' + 'a'+i).innerHTML = atts.a[i].replace(/\^3/g, '<sup>3</sup>');
             
@@ -413,19 +415,16 @@
                 document.getElementById('text_' + 'w'+i+'.1').title = wi1_title;
                 
                 if (hideFactor !== undefined && hideFactor == i || hideFactor <= -2) {
-                	//document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
-                	//document.getElementById('text_' + 'w'+i).title = '';
+                	document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
+                	document.getElementById('text_' + 'w'+i).title = '';
                 	const hideElement = document.getElementById('text_' + 'w'+i+'.1');
                 	hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
                 	hideElement.title = '';
-                	if (xaiType != 'transferable' && domainId == 1) {
-                		hideElement.classList.add('subspaceFactorBlack');
-                	}
                 }
 
                 // whether to show yPartial
-                document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? '?' : roundToPrecision(instance.yPartial[i], precision, false);
-                document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? "?" : instance.yPartial[i].toFixed(3);
+                document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 || editValues == 1 ? '?' : roundToPrecision(instance.yPartial[i], precision, false);
+                document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 || editValues == 1 ? "?" : instance.yPartial[i].toFixed(3);
             }
 
             /* ====================== Set factors header ======================== */
@@ -449,8 +448,8 @@
 
             /* ====================== Set yExplain, yAI and dy ======================== */
             const text_ye = document.getElementById('text_' + 'yExplain');
-            text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : roundToPrecision(instance.yExplain, 1, false);
-            text_ye.title = xaiType == 'none' || hideFactor == -2 ? '?' : instance.yExplain.toFixed(3);
+            text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 || editValues == 1 ? '?' : roundToPrecision(instance.yExplain, 1, false);
+            text_ye.title = xaiType == 'none' || hideFactor == -2 || editValues == 1 ? '?' : instance.yExplain.toFixed(3);
 
             document.getElementById('text_' + 'yAI').innerHTML = showPrediction ? roundToPrecision(instance.yAI, 1, false): '?';
             document.getElementById('text_' + 'yAI').title = showPrediction ? instance.yAI.toFixed(3) : '?';
@@ -511,11 +510,23 @@
             }
 
             /* ====================== Set tutorial visibility ======================== */
-            if (0 < tutorial && tutorial < 10) {   // show specific tutorial component
-            	let tutorialEl = document.getElementById('tutorial' + tutorial);
-            	if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+            if (0 < tutorial) {   // show specific tutorial component
+                if (tutorial == 23) {
+                    let tutorialEl = document.getElementById('tutorial' + 2);
+                    if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+                    tutorialEl = document.getElementById('tutorial' + 3);
+                    if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+                } else {
+                    let tutorialEl = document.getElementById('tutorial' + tutorial);
+                    if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+                }
             	
-            	if (tutorial == 3) {
+            	if (domainId == 1 && (tutorial == 2 || tutorial == 23)) {
+            		let tutorialEl = document.getElementById('tutorial2');
+            		tutorialEl.innerHTML = '2b';
+                    if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
+            	}
+            	if (tutorial == 3 || tutorial == 23) {
             		let tutorialEl = document.getElementById('tutorial3b');
             		if (tutorialEl.parentElement.style.visibility != 'hidden') { tutorialEl.style.visibility = 'visible'; }
             	}
@@ -560,22 +571,19 @@
             }
 
 
-        const inputFactorHTML = function(i, value, title, isB) {
-        	if (hideFactor == -2) {
-        		// 当hideFactor == -2时，如果xaiType不是transferable，则初始值为0
-        		if (xaiType == 'transferable') {
-        			value = isB ? 0 : 0;  // transferable模式下w1.1列使用1，w1列使用0
-        		} else {
-        			value = 0;  // 非transferable模式下所有输入框初始值为0
-        		}
-        	}
-        	const placeholder = xaiType == 'none' ? '?' : Number(value.toPrecision(i == 0 ? 3 : 2));
+        function inputFactorHTML(i, value, title, isB) {
+        	if (hideFactor == -3) {
+        		value = roundToPrecision(value, 1, false);
+        	} else {
+                value = 0;
+            }
+        	const placeholder = xaiType == 'none' ? '?' : value;
         	title = xaiType == 'none' || hideFactor <= -2 ? '' : title;
         	
-        	return '<input id="input_w' + i + (isB ? '.1' : '') + '" class="inputFactor" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="" title="'+title+'" autocomplete="off" />';  // If want to show k after the placeholder, add 'k' after />
+        	return '<input id="input_w' + i + (isB ? '.1' : '') + '" class="inputFactor" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="'+(hideFactor == -3 ? value : '')+'" step="0.1" title="'+title+'" autocomplete="off" />';  // If want to show k after the placeholder, add 'k' after />
         }
-        
-        const inputValueHTML = function(i, value) {
+
+        function inputValueHTML(i, value) {
         	const placeholder = thousands(value, i == 1 ? 3 : 2);
         	const title = value;
         	const min = atts.v_min[i], max = atts.v_max[i], step = atts.v_step[i];	
@@ -742,7 +750,9 @@
                     instanceDomain2.yPartial = reorderArray(instanceDomain2.yPartial, feature2IndexMap);
                 }
         }
-        
+
+        }
+
         function renderValueMeterUI(i, vi) {
         	const meter = document.getElementById('meter_' + 'v'+i);
         	if (i > 0) {
@@ -770,33 +780,35 @@
         	textDyInequality.innerHTML = showPrediction ? (dy > 0 ? "&gt;" : (dy < 0 ? "&lt;" : "&asymp;")) : '&asymp;';
         }
         
+
         let inputsActivated = false;
-        const activateInputs = function(input_wi) {
+        function activateInputs(input_wi) {
         	if (inputsActivated == true) { return; }
         	
-        	for (let i = 0; i <= actualAttributeCount; i++) {
-        		const input_vi = document.getElementById('input_' + 'v'+i);
-        		const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
-        		
-        		const init = function(input) {
-        			if (input == null) { return; }
-        			if (input.value == '') {
-        				if (editValues || hideFactor <= -2 || (hideFactor >= 0 && hideFactor == i)) { 
-        					input.value = input.placeholder == '?' ? 0 : Number(input.placeholder); 
-        				}
-        				else { 
-        					input.value = 0; 
-        				}
-        			}
-        		}
-        		init(input_vi);
-        		init(input_wi1);
-        	}
+            for (let i = 0; i <= actualAttributeCount; i++) {
+            	const input_vi = document.getElementById('input_' + 'v'+i);
+            	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
+            	
+            	const init = function(input) {
+            		if (input == null) { return; }
+            		if (input.value == '') {
+            			if (editValues || hideFactor <= -2 || (hideFactor >= 0 && hideFactor == i)) { 
+            				input.value = input.placeholder == '?' ? 0 : Number(input.placeholder); 
+            			}
+            			else { 
+            				input.value = 0; 
+            			}
+            		}
+            	}
+            	init(input_vi);
+            	init(input_wi1);
+            }
+        	
         	inputsActivated = true;
         	
         	calculateYe(null);
         }
-        const calculateYe = function(el) {
+        function calculateYe(el) {
         	if (el) { el.classList.add('inputEdited'); }
         
         	ye = 0;
@@ -810,21 +822,21 @@
         	dy = appType == 'classification' ? (ye - yAI) / 100 : (ye - yAI) / yAI;
         	renderDyUI(dy);
         }
-        const calculateYi = function(i) {
+        function calculateYi(i) {
         	const input_vi = document.getElementById('input_' + 'v'+i);
         	const input_wi0 = document.getElementById('input_' + 'w'+i);
         	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
         	
         	let wi0, wi1;
         	if (hideFactor <= -2) { 
-        		wi0 = instance.w[i];  // 使用默认值，不从输入框读取
+        		wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
         		wi1 = Number(input_wi1.value); 
         		// 只有当输入框有值时才设置title
         		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
         	}
         	else if (hideFactor > 0 && hideFactor == i) {
         		// 当hideFactor > 0时，只有指定的因子变成输入框
-        		wi0 = instance.w[i];
+        		wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
         		wi1 = Number(input_wi1.value);
         		// 只有当输入框有值时才设置title
         		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
@@ -833,6 +845,7 @@
         		wi0 = instance.w[i]; 
         		wi1 = 1; 
         	}
+        	
         
         	let vi = instance.v[i];
         	if (editValues) { 
@@ -840,18 +853,17 @@
         		input_vi.title = titleDesc(atts.y_unitName, i, vi);
         	}
         	
-        	const yi = vi * (wi0 * wi1);	
+        	const yi = vi * (domainId == 0 ? wi0 : wi1);
         	
         	const text_yi = document.getElementById('text_' + 'y'+i);   // yPartial
-        	text_yi.innerHTML = roundToPrecision(yi, precision, false);
-        	text_yi.title = roundToPrecision(yi, 5, false);
+        	text_yi.innerHTML = thousands(yi, 5, false);
+        	text_yi.title = thousands(yi, 5, false);
         	
         	renderValueMeterUI(i, vi);
         	
         	return yi;
         }
-        
-        
+           
         function titleDesc(y_unitName, i, wi, extraFactorBias = undefined) {
         	return i == 0 ? y_unitName + " adjusted by " + thousands(wi, 5, false) + (extraFactorBias ? (extraFactorBias < 0 ? " " : " + ") + thousands(extraFactorBias, 5, false) : "") :
         					y_unitName + " changes by " + thousands(wi, 5, false) + " for each increase in " + atts.a[i];
@@ -878,8 +890,6 @@
             }
         
             return numberApprox;
-        }
-
         }
         
         // 页面加载时开始数据加载流程

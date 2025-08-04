@@ -235,7 +235,7 @@ function renderUI(atts, globalModel, data) {
 		nextCells[i].rowSpan = totalRows;
 	}
 
-	/* ====================== Set attribute values and weights ======================== */
+	/* ====================== Set attribute values, weights and yPartial ======================== */
 	for (let i = 0; i <= actualAttributeCount; i++) {
 		document.getElementById('text_' + 'a'+i).innerHTML = atts.a[i].replace(/\^3/g, '<sup>3</sup>');
 	
@@ -339,8 +339,8 @@ function renderUI(atts, globalModel, data) {
 		}
 		
 		// whether to show yPartial
-		document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? '?' : roundToPrecision(instance.yPartial[i], precision, false);
-		document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 ? "?" : thousands(instance.yPartial[i], 5, false);
+		document.getElementById('text_' + 'y'+i).innerHTML = xaiType == 'none' || hideFactor == i || hideFactor == -2 || editValues == 1 ? '?' : roundToPrecision(instance.yPartial[i], precision, false);
+		document.getElementById('text_' + 'y'+i).title = xaiType == 'none' || hideFactor == i || hideFactor == -2 || editValues == 1 ? "?" : thousands(instance.yPartial[i], 5, false);
 	}
 
 	/* ====================== Set domain name ======================== */
@@ -401,8 +401,8 @@ function renderUI(atts, globalModel, data) {
 
 	/* ====================== Set yExplain, yAI and dy ======================== */
 	const text_ye = document.getElementById('text_' + 'yExplain');
-	text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 ? '?' : roundToPrecision(instance.yExplain, 3, false);
-	text_ye.title = xaiType == 'none' || hideFactor == -2 ? "?" : thousands(instance.yExplain, 5, false);
+	text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 || editValues == 1 ? '?' : roundToPrecision(instance.yExplain, 3, false);
+	text_ye.title = xaiType == 'none' || hideFactor == -2 || editValues == 1 ? "?" : thousands(instance.yExplain, 5, false);
 	
 	document.getElementById('text_yAI').innerHTML = showPrediction ? roundToPrecision(instance.yAI, 3, false) : '?';
 	document.getElementById('text_yAI').title = showPrediction ? thousands(instance.yAI, 5, false) : '?';
@@ -673,14 +673,14 @@ const calculateYi = function(i) {
 	
 	let wi0, wi1;
 	if (hideFactor <= -2) { 
-		wi0 = instance.w[i];  // 使用默认值，不从输入框读取
+		wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
 		wi1 = Number(input_wi1.value); 
 		// 只有当输入框有值时才设置title
 		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
 	}
 	else if (hideFactor > 0 && hideFactor == i) {
 		// 当hideFactor > 0时，只有指定的因子变成输入框
-		wi0 = instance.w[i];
+		wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
 		wi1 = Number(input_wi1.value);
 		// 只有当输入框有值时才设置title
 		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
@@ -696,7 +696,7 @@ const calculateYi = function(i) {
 		input_vi.title = titleDesc(atts.y_unitName, i, vi);
 	}
 	
-	const yi = vi * (wi0 * wi1);
+	const yi = vi * (domainId == 0 ? wi0 : xaiType == 'isolated' ? wi1 : wi0 * wi1);
 	const newFactor = wi0 * wi1;
 	
 	// 如果显示新因子列，更新其值
