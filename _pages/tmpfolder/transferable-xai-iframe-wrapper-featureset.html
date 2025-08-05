@@ -49,6 +49,14 @@ Edit Values <input id="input_editValues" type="checkbox" /> |
 -->
 Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 
+<div><b>Transferable XAI - Transformation matrix</b></div>
+<div>URL: <a id="text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframe')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframe')">Copy URL</button></div>
+<iframe id="interactiveIframe" 
+		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&showPrediction=1" 
+		width="1280px" height="550px"
+		frameBorder="0" scrolling="no"
+		></iframe>
+
 </div>
 <div><b>Transferable XAI - Domain 1</b></div>
 <div>URL: <a id="domain1_text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframeDomain1')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframeDomain1')">Copy URL</button></div>
@@ -66,6 +74,14 @@ Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 		frameBorder="0" scrolling="no"
 		></iframe>
 
+<div><b>Independent - Domain 1</b></div>
+<div>URL: <a id="independent1_text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframeIndependent1')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframeIndependent1')">Copy URL</button></div>
+<iframe id="interactiveIframeIndependent1" 
+		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&domainId=0&showPrediction=1&xaiType=isolated" 
+		width="1280px" height="310px"
+		frameBorder="0" scrolling="no"
+		></iframe>
+
 <div><b>Independent - Domain 2</b></div>
 <div>URL: <a id="independent2_text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframeIndependent2')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframeIndependent2')">Copy URL</button></div>
 <iframe id="interactiveIframeIndependent2" 
@@ -74,13 +90,6 @@ Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 		frameBorder="0" scrolling="no"
 		></iframe>
 
-<div><b>Transferable XAI - Transformation matrix</b></div>
-<div>URL: <a id="text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframe')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframe')">Copy URL</button></div>
-<iframe id="interactiveIframe" 
-		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&showPrediction=1" 
-		width="1280px" height="550px"
-		frameBorder="0" scrolling="no"
-		></iframe>
 
 <script>
 let url = "";
@@ -113,6 +122,12 @@ function updateIframeUrl() {
 	document.querySelector("#domain2_text_url").href = url;
 	document.querySelector("#domain2_text_url").innerHTML = url;
 
+	const iframeIndependent1 = document.querySelector("#interactiveIframeIndependent1");
+	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=0&showPrediction="+showPrediction+"&xaiType=isolated&tutorial="+tutorial+"&hideFactor="+hideFactor;
+	iframeIndependent1.src = url;
+	document.querySelector("#independent1_text_url").href = url;
+	document.querySelector("#independent1_text_url").innerHTML = url;
+
 	const iframeIndependent2 = document.querySelector("#interactiveIframeIndependent2");
 	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=1&showPrediction="+showPrediction+"&xaiType=isolated&tutorial="+tutorial+"&hideFactor="+hideFactor;
 	iframeIndependent2.src = url;
@@ -122,16 +137,19 @@ function updateIframeUrl() {
 	if (tutorial != 0) { 
 		iframeDomain1.height = '350px';
 		iframeDomain2.height = '350px';
+		iframeIndependent1.height = '350px';
 		iframeIndependent2.height = '350px';
 	}
 	else if ((hideFactor != 0 || xaiType == 'none') && tutorial == 0) { 
 		iframeDomain1.height = '320px'; 
 		iframeDomain2.height = '320px'; 
+		iframeIndependent1.height = '320px'; 
 		iframeIndependent2.height = '320px'; 
 	}
 	else { 
 		iframeDomain1.height = '320px'; 
 		iframeDomain2.height = '320px'; 
+		iframeIndependent1.height = '320px'; 
 		iframeIndependent2.height = '320px'; }
 
 	const iframe = document.querySelector("#interactiveIframe");
