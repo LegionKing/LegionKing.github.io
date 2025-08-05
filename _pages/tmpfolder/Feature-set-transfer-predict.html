@@ -285,7 +285,7 @@
         		w[i] = domainId == 0 ? globalModel.wDomain1[i] : globalModel.wDomain2[i];
         		yPartial[i] = v[i] * w[i];
         	}
-            w[0] = xaiType == 'transferable' ? globalModel.wDomain1[0] : globalModel.wDomain2[0];  // when trasferable,even domainId == 1, w0 is the bias of domain 1, because need to show the extra bias term 
+            w[0] = (xaiType == 'transferable' || domainId == 0) ? globalModel.wDomain1[0] : globalModel.wDomain2[0];  // when trasferable,even domainId == 1, w0 is the bias of domain 1, because need to show the extra bias term 
         	const yExplain = vec_sum(yPartial);
 
             yAI = data[row]['y_ai'];

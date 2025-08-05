@@ -669,10 +669,16 @@
             value1 = reorderArray(value1, feature1IndexMap);
             factor1 = reorderArray(factor1, feature1IndexMap);
             extraBias = reorderArray(extraBias, feature1IndexMap);
+            attsDomain1.v_max = reorderArray(attsDomain1.v_max, feature1IndexMap);
+            attsDomain1.v_min = reorderArray(attsDomain1.v_min, feature1IndexMap);
+            attsDomain1.v_step = reorderArray(attsDomain1.v_step, feature1IndexMap);
 
             // Reorder value2 and factor2 based on feature2IndexMap
             value2 = reorderArray(value2, feature2IndexMap);
             factor2 = reorderArray(factor2, feature2IndexMap);
+            attsDomain2.v_max = reorderArray(attsDomain2.v_max, feature2IndexMap);
+            attsDomain2.v_min = reorderArray(attsDomain2.v_min, feature2IndexMap);
+            attsDomain2.v_step = reorderArray(attsDomain2.v_step, feature2IndexMap);
 
             // 构建排序后的matrixData
             const sortedMatrixData = [];
