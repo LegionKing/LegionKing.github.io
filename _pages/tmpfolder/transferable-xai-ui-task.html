@@ -512,6 +512,13 @@ function renderUI(atts, globalModel, data) {
 		}
 		if (xaiType == 'transferable' && domainId == 0) { Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none'); }
 	}
+
+	if (hideFactor != -2 && editValues == 0) {
+		document.getElementById('td_reset').style.display = 'none';
+	}
+	else {
+		document.getElementById('td_reset').style.display = 'revert';
+	}
 }
 
 function checkTextLinesAndAdjustTransform() {
@@ -906,7 +913,7 @@ tr.adjustment {opacity:0.50;}
     <td class="tg-zme7"><div id="text_y0">y0</div></td>
   </tr>
   <tr>
-    <td class="tg-dvpl"><button onclick="location.reload()">Reset</button></td>
+    <td class="tg-dvpl" id="td_reset"><button onclick="location.reload()">Reset</button></td>
   </tr>
 </tbody>
 </table>
