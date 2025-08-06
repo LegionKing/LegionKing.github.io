@@ -482,7 +482,11 @@ function renderUI(atts, globalModel, data) {
 			if (el.parentElement.style.visibility != 'hidden') { el.style.visibility = 'visible'; }
 		});
 		document.getElementById('tutorial7').style.visibility = atts.appType == 'classification' ? 'hidden' : 'visible';
-		if (xaiType == 'transferable' && domainId == 0) { Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none'); }
+		if (xaiType == 'transferable' && domainId == 0) {    // Special case, for the use of survey, not a good way of coding
+			Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none');
+			Array.from(document.getElementsByClassName('showNewFactor')).forEach(el => el.style.display = 'none');
+			Array.from(document.getElementsByClassName('showTransfer')).forEach(el => el.style.display = 'none');
+		}
 	}
 	else if (tutorial == -2) {  // show all tutorial components for explanation, gray out AI components
 		for (let i = 1; i <= 7; i++) {
@@ -510,7 +514,11 @@ function renderUI(atts, globalModel, data) {
 					break;
 			}
 		}
-		if (xaiType == 'transferable' && domainId == 0) { Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none'); }
+		if (xaiType == 'transferable' && domainId == 0) {  // Special case, for the use of survey, not a good way of coding
+			Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none');
+			Array.from(document.getElementsByClassName('showNewFactor')).forEach(el => el.style.display = 'none');
+			Array.from(document.getElementsByClassName('showTransfer')).forEach(el => el.style.display = 'none');
+		}
 	}
 
 	if (hideFactor != -2 && editValues == 0) {
