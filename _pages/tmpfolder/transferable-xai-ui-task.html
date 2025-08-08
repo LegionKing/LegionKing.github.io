@@ -139,8 +139,6 @@ function extractInstance(atts, globalModel, data, id) {
 	// const dy = xaiType == 'none' ? 0 : (ye - y) / atts.y_max;
 	// const dy = xaiType == 'none' ? 0 : (yExplain - yAI) / yAI;
 	const dy = xaiType == 'none' ? 0 : (appType == 'classification' ? (yExplain - yAI) / 100 : (yExplain - yAI) / yAI);
-	console.log('dy', dy);
-	console.log('appType', appType);
 	
 	if (xaiType == 'transferable') {
 		return {
@@ -736,7 +734,6 @@ Papa.parse("./transferable-xai-app-multitask-attributes.csv", {
 	header: true,
 	dynamicTyping: true,
 	complete: function(att_res) {
-		//console.log('att_res', att_res);
 		atts = extractAttributeNames(att_res.data);
 		
 		Papa.parse("./transferable-xai-multitask-models.csv", {
@@ -744,7 +741,6 @@ Papa.parse("./transferable-xai-app-multitask-attributes.csv", {
 			header: true,
 			dynamicTyping: true,
 			complete: function(models_res) {
-				//console.log('models_res', models_res);
 				const globalModel = extractGlobalModel(models_res.data);
 		
 				Papa.parse("./transferable-xai-multitask-trials-data.csv", {
