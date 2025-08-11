@@ -167,7 +167,7 @@ const inputFactorHTML = function(i, value, title, isB) {
 	if (hideFactor == -2) {
 		// 当hideFactor == -2时，如果xaiType不是transferable，则初始值为0
 		if (xaiType == 'transferable') {
-			value = isB ? 0 : 0;  // transferable模式下w1.1列使用1，w1列使用0
+			value = isB ? 0 : 0;  // transferable模式下w1.1列使用1，w1列使用0 // 都用0吧
 		} else {
 			value = 0;  // 非transferable模式下所有输入框初始值为0
 		}
@@ -320,17 +320,30 @@ function renderUI(atts, globalModel, data) {
 		document.getElementById('text_' + 'w'+i).title = wi0_title;
 		document.getElementById('text_' + 'w'+i+'.1').title = wi1_title;
 		
-		if (hideFactor !== undefined && hideFactor == i || hideFactor <= -2) {
-			if (xaiType != 'transferable' && domainId == 0) {
+		if (hideFactor == i || hideFactor <= -2) {
+			// if (xaiType != 'transferable' && domainId == 0) {
+			// 	document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
+			// 	document.getElementById('text_' + 'w'+i).title = '';
+			// }
+			// const hideElement = document.getElementById('text_' + 'w'+i+'.1');
+			// hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
+			// hideElement.title = '';
+
+			if (domainId == 0) {
 				document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
 				document.getElementById('text_' + 'w'+i).title = '';
+				if (xaiType == 'transferable') {
+					document.getElementById('text_' + 'w'+i+'.1').classList.add('subspaceFactorGray');
+				}
+			} else {
+				const hideElement = document.getElementById('text_' + 'w'+i+'.1');
+				hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
+				hideElement.title = '';
+				if (xaiType != 'transferable') {
+					hideElement.classList.add('subspaceFactorBlack');
+				}
 			}
-			const hideElement = document.getElementById('text_' + 'w'+i+'.1');
-			hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
-			hideElement.title = '';
-			if (xaiType != 'transferable' && domainId == 1) {
-				hideElement.classList.add('subspaceFactorBlack');
-			}
+
 			const element2 = document.getElementById('text_' + 'w'+i+'.2');
 			element2.innerHTML = '?';
 			element2.title = '';
@@ -399,10 +412,10 @@ function renderUI(atts, globalModel, data) {
 
 	/* ====================== Set yExplain, yAI and dy ======================== */
 	const text_ye = document.getElementById('text_' + 'yExplain');
-	text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 || editValues == 1 ? '?' : roundToPrecision(instance.yExplain, 3, false);
+	text_ye.innerHTML = xaiType == 'none' || hideFactor == -2 || editValues == 1 ? '?' : roundToPrecision(instance.yExplain, 2, false);
 	text_ye.title = xaiType == 'none' || hideFactor == -2 || editValues == 1 ? "?" : thousands(instance.yExplain, 5, false);
 	
-	document.getElementById('text_yAI').innerHTML = showPrediction ? roundToPrecision(instance.yAI, 3, false) : '?';
+	document.getElementById('text_yAI').innerHTML = showPrediction ? roundToPrecision(instance.yAI, 2, false) : '?';
 	document.getElementById('text_yAI').title = showPrediction ? thousands(instance.yAI, 5, false) : '?';
 		
 	renderDyUI(instance.dy);
@@ -673,34 +686,37 @@ const calculateYe = function(el) {
 		ye += calculateYi(i);
 	}
 	const text_ye = document.getElementById('text_yExplain');
-	text_ye.innerHTML = roundToPrecision(ye, 3, false);
+	text_ye.innerHTML = roundToPrecision(ye, 2, false);
 	text_ye.title = thousands(ye, 5, false);
 	
 	dy = appType == 'classification' ? (ye - yAI) / 100 : (ye - yAI) / yAI;
 	renderDyUI(dy);
 }
 const calculateYi = function(i) {
+	debugger;
 	const input_vi = document.getElementById('input_' + 'v'+i);
 	const input_wi0 = document.getElementById('input_' + 'w'+i);
 	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
 	
 	let wi0, wi1;
-	if (hideFactor <= -2) { 
-		wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
-		wi1 = Number(input_wi1.value); 
+	if (hideFactor <= -2 || (hideFactor > 0 && hideFactor == i)) { 
+		if (xaiType == 'isolated') {
+			wi0 = domainId == 0 ? Number(input_wi0.value) : instance.w[i];
+			wi1 = domainId == 1 ? Number(input_wi1.value) : instance.w[i];
+		} else {   // transferable
+			wi0 = domainId == 0 ? Number(input_wi0.value) : instance.wDomain1[i];
+			wi1 = domainId == 1 ? Number(input_wi1.value) : 1;
+		}
 		// 只有当输入框有值时才设置title
-		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
-	}
-	else if (hideFactor > 0 && hideFactor == i) {
-		// 当hideFactor > 0时，只有指定的因子变成输入框
-		wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
-		wi1 = Number(input_wi1.value);
-		// 只有当输入框有值时才设置title
-		input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
+		if (domainId == 0) {
+			input_wi0.title = input_wi0.value !== '' ? titleDesc(atts.y_unitName, i, wi0) : '';
+		} else {
+			input_wi1.title = input_wi1.value !== '' ? titleDesc(atts.y_unitName, i, wi1) : '';
+		}
 	}
 	else { 
-		wi0 = instance.w[i]; 
-		wi1 = 1; 
+		wi0 = xaiType == 'isolated' ? instance.w[i] : instance.wDomain1[i];
+		wi1 = xaiType == 'isolated' ? instance.w[i] : instance.wDomain2[i];
 	}
 
 	let vi = instance.v[i];
@@ -720,7 +736,7 @@ const calculateYi = function(i) {
 	}
 	
 	const text_yi = document.getElementById('text_' + 'y'+i);   // yPartial
-	text_yi.innerHTML = roundToPrecision(yi, i == 0 ? 3 : 2, false);
+	text_yi.innerHTML = roundToPrecision(yi, i == 0 ? 2 : 1, false);
 	text_yi.title = thousands(yi, 5, false);
 	
 	renderValueMeterUI(i, vi);
@@ -790,6 +806,7 @@ body {margin:0px; padding:0px}
 .subspaceFactor {color:#2e8112}
 /* .w_i1_0 {color:#a1d590} */
 .subspaceFactorBlack {color:#000000}
+.subspaceFactorGray {color:#6e6d6d}
 .xaiTop {border-top: solid 2px #2e8112;} .xaiLeft {border-left: solid 2px #2e8112;} .xaiRight {border-right: solid 2px #2e8112;} .xaiBottom {border-bottom: solid 2px #2e8112;}
 meter {width:15px; cursor:pointer;}
 #text_dy_pad {font-weight:bold; padding: 1px 5px;}
