@@ -52,13 +52,21 @@ Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 		frameBorder="0" scrolling="no"
 		></iframe>
 
+<div>URL: <a id="text_url2" href=""></a> <button onclick="copyIframeHtml2()">Copy Iframe</button> <button onclick="copyUrl2()">Copy URL</button></div>
+<iframe id="interactiveIframe2" 
+		src="transferable-xai-ui-task-relValue.html?appId=NHANES&xaiType=transferable&domainId=1&id=7&hideFactor=-1&editValues=0&tutorial=0&showPrediction=1" 
+		width="1280px" height="320px"
+		frameBorder="0" scrolling="no"
+		></iframe>
+
 <script>
 let url = "";
 const urlRoot = "http://127.0.0.1:5500/";
 const htmlName = "transferable-xai-ui-task.html";
+const htmlName2 = "transferable-xai-ui-task-relValue.html";
 let tutorial = 0;
 
-function updateIframeUrl(iframeId) {
+function updateIframeUrl() {
 	const appId = document.querySelector("#input_appId").value;
 	const id = document.querySelector("#input_id").value;
 	const domainId = document.querySelector("#input_domainId").value;
@@ -77,6 +85,15 @@ function updateIframeUrl(iframeId) {
 		
 	document.querySelector("#text_url").href = url;
 	document.querySelector("#text_url").innerHTML = url;
+
+	const iframe2 = document.querySelector("#interactiveIframe2");
+	url2 = htmlName2+"?appId="+appId+"&id="+id+"&domainId="+domainId+"&xaiType="+xaiType+"&tutorial="+tutorial+"&hideFactor="+hideFactor+"&editValues="+editValues+"&showPrediction="+showPrediction;
+	iframe2.src = url2;
+	if (tutorial != 0) { iframe2.height = '350px'; }
+	else if ((hideFactor != 0 || xaiType == 'none') && tutorial == 0) { iframe2.height = '320px'; }
+	else { iframe2.height = '320px'; }
+	document.querySelector("#text_url2").href = url2;
+	document.querySelector("#text_url2").innerHTML = url2;
 }
 
 function updateId() {
@@ -109,6 +126,16 @@ function copyIframeHtml() {
 }
 function copyUrl() {
 	navigator.clipboard.writeText(urlRoot + url);
+}
+function copyIframeHtml2() {
+	let html = document.querySelector("#interactiveIframe2").outerHTML;
+	html = html.replace("src=\"", "src=\"" + urlRoot);
+	html = html.replaceAll("&amp;", "&");
+	html = html.replaceAll("id=\"interactiveIframe2\" ", "");
+	navigator.clipboard.writeText(html);
+}
+function copyUrl2() {
+	navigator.clipboard.writeText(urlRoot + url2);
 }
 
 document.querySelector("#input_appId").onchange = updateIframeUrl;
