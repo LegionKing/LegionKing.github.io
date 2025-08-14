@@ -171,7 +171,7 @@ function extractInstance(atts, globalModel, data, id) {
 }
 
 const inputFactorHTML = function(i, value, title, isB) {
-	if (hideFactor == -2) {
+	if (hideFactor <= -2) {
 		// 当hideFactor == -2时，如果xaiType不是transferable，则初始值为0
 		if (xaiType == 'transferable') {
 			value = isB ? 1 : 0;  // transferable模式下w1.1列使用1，w1列使用0
@@ -220,7 +220,6 @@ function roundToPrecision(number, precision, sparse = false) {
 	return numberApprox;
 }
 
-
 function renderUI(atts, globalModel, data) {	
 	instance = extractInstance(atts, globalModel, data, id);
 	calculateNewBiasAndYPartial()    // update bias term and instance.yPartial
@@ -251,7 +250,7 @@ function renderUI(atts, globalModel, data) {
 		elTextVi.innerHTML = categoricalAttributes.includes(atts.a[i]) ? category(vi) : thousands(vi, 2);
 		elTextVi.title = vi;
 		if (editValues == 1) {
-			elTextVi.innerHTML = inputValueHTML(i, 0); // 当editValues==1时，输入框初始值设为0
+			elTextVi.innerHTML = inputValueHTML(i, globalModel.valueMean[i]); // 当editValues==1时，输入框初始值设为该attribute的平均值
 			elTextVi.title = '';//'?'; 
 		}
 
@@ -342,13 +341,14 @@ function renderUI(atts, globalModel, data) {
 			// hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
 			// hideElement.title = '';
 
-			if (domainId == 0) {
+			if (domainId == 0 || hideFactor == -5) {
 				document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
 				document.getElementById('text_' + 'w'+i).title = '';
 				if (xaiType == 'transferable') {
 					document.getElementById('text_' + 'w'+i+'.1').classList.add('subspaceFactorGray');
 				}
-			} else {
+			} 
+			if (domainId == 1 || hideFactor == -5) {
 				const hideElement = document.getElementById('text_' + 'w'+i+'.1');
 				hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
 				hideElement.title = '';
@@ -708,7 +708,6 @@ const calculateYe = function(el) {
 	renderDyUI(dy);
 }
 const calculateYi = function(i) {
-	debugger;
 	const input_vi = document.getElementById('input_' + 'v'+i);
 	const input_wi0 = document.getElementById('input_' + 'w'+i);
 	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
@@ -719,8 +718,13 @@ const calculateYi = function(i) {
 			wi0 = domainId == 0 ? Number(input_wi0.value) : instance.w[i];
 			wi1 = domainId == 1 ? Number(input_wi1.value) : instance.w[i];
 		} else {   // transferable
-			wi0 = domainId == 0 ? Number(input_wi0.value) : instance.wDomain1[i];
-			wi1 = domainId == 1 ? Number(input_wi1.value) : 1;
+			if (hideFactor == -5) {
+				wi0 = Number(input_wi0.value);
+				wi1 = Number(input_wi1.value);
+			} else {
+				wi0 = domainId == 0 ? Number(input_wi0.value) : instance.wDomain1[i];
+				wi1 = domainId == 1 ? Number(input_wi1.value) : 1;
+			}
 		}
 		// 只有当输入框有值时才设置title
 		if (domainId == 0) {
@@ -740,8 +744,10 @@ const calculateYi = function(i) {
 		input_vi.title = titleDesc(atts.y_unitName, i, vi);
 	}
 	
-	const yi = (vi - globalModel.valueMean[i]) * (domainId == 0 ? wi0 : xaiType == 'isolated' ? wi1 : wi0 * wi1);
+	const yi = (vi - globalModel.valueMean[i]) * (xaiType == 'isolated' ? (domainId == 0 ? wi0 : wi1) : wi0 * wi1);
 	const newFactor = wi0 * wi1;
+
+	console.log('1', vi, wi0, wi1, newFactor);
 	
 	// 如果显示新因子列，更新其值
 	if (showNewFactor == 1 && xaiType == 'transferable') {
