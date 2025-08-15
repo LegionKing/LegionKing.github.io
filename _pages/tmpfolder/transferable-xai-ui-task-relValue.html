@@ -291,21 +291,34 @@ function renderUI(atts, globalModel, data) {
 				
 				// 根据wi1的值设置颜色
 				if (hideFactor == -1) {
-					if (Number(roundedWi1Text) > 1) {
-						// 大于1时使用蓝色，数值越大颜色越深
-						element.style.color = `hsl(240, 100%, ${10 + Math.min(1, 1 / (wi1 - 1)) * 80}%)`;  // 用倒数，这样接近1时的区分度更明显
-						element2.style.color = `hsl(240, 100%, ${10 + Math.min(1, 1 / (wi1 - 1)) * 80}%)`;
-					} else if (Number(roundedWi1Text) < 1) {
-						// 小于1时使用红色，数值越小颜色越深
-						element.style.color = `hsl(0, 100%, ${10 + Math.min(1, 1 / (1 - wi1)) * 80}%)`;  // 用倒数，这样接近1时的区分度更明显
-						element2.style.color = `hsl(0, 100%, ${10 + Math.min(1, 1 / (1 - wi1)) * 80}%)`;
-					} else {
+					// Old version
+					// if (Number(roundedWi1Text) > 1) {
+					// 	// 大于1时使用蓝色，数值越大颜色越深
+					// 	element.style.color = `hsl(240, 100%, ${10 + Math.min(1, 1 / (wi1 - 1)) * 80}%)`;  // 用倒数，这样接近1时的区分度更明显
+					// 	element2.style.color = `hsl(240, 100%, ${10 + Math.min(1, 1 / (wi1 - 1)) * 80}%)`;
+					// } else if (Number(roundedWi1Text) < 1) {
+					// 	// 小于1时使用红色，数值越小颜色越深
+					// 	element.style.color = `hsl(0, 100%, ${10 + Math.min(1, 1 / (1 - wi1)) * 80}%)`;  // 用倒数，这样接近1时的区分度更明显
+					// 	element2.style.color = `hsl(0, 100%, ${10 + Math.min(1, 1 / (1 - wi1)) * 80}%)`;
+					// } else {
+					// 	element.style.color = 'rgba(128, 128, 128, 0.2)';
+					// 	element2.style.color = 'rgba(128, 128, 128, 0.2)';
+					// }
+					if (Number(roundedWi1Text) > 1 && Number(roundedWi1Text) <= 1.5) {
+						element.style.color = '#2176ff';
+					} else if (Number(roundedWi1Text) > 1.5) {
+						element.style.color = '#1010ff';
+					} else if (Number(roundedWi1Text) < 1 && Number(roundedWi1Text) >= 0.5) {
+						element.style.color = '#fb6666';
+					} else if (Number(roundedWi1Text) < 0.5) {
+						element.style.color = '#9e0404';
+					} else {  // ==1
 						element.style.color = 'rgba(128, 128, 128, 0.2)';
-						element2.style.color = 'rgba(128, 128, 128, 0.2)';
 					}
+
 				} else {
 					element.style.color = '';
-					element2.style.color = '';
+					// element2.style.color = '';
 				}
 				
 				// if (!editValues && roundedWi1Text == '1') { element.classList.add('w_i1_0'); }
