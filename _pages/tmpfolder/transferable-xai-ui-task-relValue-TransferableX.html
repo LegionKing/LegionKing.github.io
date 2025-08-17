@@ -48,6 +48,7 @@ let globalModel;
 
 function extractAttributeNames(data) {	
 	const appId_row = data.findIndex(d => d.appId == appId && d.domainId == domainId); // get row that has id
+	//console.log('appId_row', appId_row);	
 	row = appId_row;
 	
 	const maxAttributeCount = 8;
@@ -188,7 +189,16 @@ const inputValueHTML = function(i, value) {
 	const placeholder = thousands(value, i == 1 ? 3 : 2);
 	const title = value;
 	const min = atts.v_min[i], max = atts.v_max[i], step = atts.v_step[i];	
-	return '<input id="input_v' + i + '" class="inputValue" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="'+placeholder+'" min="'+min+'" max="'+max+'" step="'+step+'" title="'+title+'" autocomplete="off" />';
+	return '<input id="input_v' + i + '" class="inputValue" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="' + placeholder + '" min="'+min+'" max="'+max+'" step="'+step+'" title="'+title+'" autocomplete="off" />';
+}
+
+const inputCompHTML = function(i) {
+	var options = ["Similar", "Bigger", "Smaller", "Bigger (Opp)", "Smaller (Opp)", "Select..."];
+	var optionsHTML = '';
+	for (var j = 0; j < options.length; j++) {
+		optionsHTML += '<option value="'+options[j]+'">'+options[j]+'</option>';
+	}
+	return '<select id="input_comp' + i + '" class="inputComp" onclick="activateInputs()" onchange="calculateYe(this)"">'+optionsHTML+'</select>';
 }
 
 const titleDesc = function(y_unitName, i, wi) {
@@ -243,6 +253,7 @@ function renderUI(atts, globalModel, data) {
 	for (let i = 0; i <= actualAttributeCount; i++) {
 		document.getElementById('text_' + 'a'+i).innerHTML = atts.a[i].replace(/\^3/g, '<sup>3</sup>');
 	
+		/* ====================== Set Values ======================== */
 		const vi = instance.v[i];
 		const elTextVi = document.getElementById('text_' + 'v'+i);
 		const categoricalAttributes = ['High blood pressure?', 'Chest pain?', 'Relative has diabetes?'];
@@ -265,6 +276,7 @@ function renderUI(atts, globalModel, data) {
 		let roundedWi1Text;
 		const precision = 1   // i == 0 ? 2 : 1;  // i==0 is bias
 
+		/* ====================== Set Factors ======================== */
 		switch (xaiType) {
 			case 'isolated':
 				if (domainId == 0) {
@@ -280,17 +292,24 @@ function renderUI(atts, globalModel, data) {
 			case 'transferable':
 				wi0 = instance.wDomain1[i];
 				wi1 = instance.wDomain2[i];
-				roundedWi1Text = roundToPrecision(wi1, precision, false);
+				roundedWi1Text = roundToPrecision(Math.abs(wi1 > 1 ? wi1 : 1 / wi1), precision, false);
 				document.getElementById('text_' + 'w'+i).innerHTML = roundToPrecision(wi0, precision, false);
 				const element = document.getElementById('text_' + 'w'+i+'.1');
+				const element_compare = document.getElementById('text_' + 'w'+i+'.1_compare');
 				const element2 = document.getElementById('text_' + 'w'+i+'.2');
 				element.innerHTML = roundedWi1Text;
-				// 字体加粗
-				element.style.fontWeight = 'bold';
+				if (Number(roundedWi1Text) == 1) {
+					element_compare.innerHTML = 'Similar';
+				} else if (wi1 > 1) {
+					element_compare.innerHTML = 'Bigger';
+				} else {
+					element_compare.innerHTML = 'Smaller';
+				}
+				element_compare.innerHTML += wi1 >= 0 ? '' : ' <span style="color: #fb6666;"> (Opp)</span>';
 				
 				// 根据wi1的值设置颜色
 				if (hideFactor == -1) {
-					// Old version
+					// Old version 1
 					// if (Number(roundedWi1Text) > 1) {
 					// 	// 大于1时使用蓝色，数值越大颜色越深
 					// 	element.style.color = `hsl(240, 100%, ${10 + Math.min(1, 1 / (wi1 - 1)) * 80}%)`;  // 用倒数，这样接近1时的区分度更明显
@@ -303,21 +322,31 @@ function renderUI(atts, globalModel, data) {
 					// 	element.style.color = 'rgba(128, 128, 128, 0.2)';
 					// 	element2.style.color = 'rgba(128, 128, 128, 0.2)';
 					// }
-					if (Number(roundedWi1Text) > 1 && Number(roundedWi1Text) <= 1.5) {
-						element.style.color = '#2176ff';
-					} else if (Number(roundedWi1Text) > 1.5) {
-						element.style.color = '#1010ff';
-					} else if (Number(roundedWi1Text) < 1 && Number(roundedWi1Text) >= 0.5) {
-						element.style.color = '#fb6666';
-					} else if (Number(roundedWi1Text) < 0.5) {
-						element.style.color = '#9e0404';
-					} else {  // ==1
-						element.style.color = 'rgba(128, 128, 128, 0.2)';
-					}
+					// Old version 2
+					// if (Number(roundedWi1Text) > 1 && Number(roundedWi1Text) <= 1.5) {
+					// 	element.style.color = '#2176ff';
+					// } else if (Number(roundedWi1Text) > 1.5) {
+					// 	element.style.color = '#1010ff';
+					// } else if (Number(roundedWi1Text) < 1 && Number(roundedWi1Text) >= 0.5) {
+					// 	element.style.color = '#fb6666';
+					// } else if (Number(roundedWi1Text) < 0.5) {
+					// 	element.style.color = '#9e0404';
+					// } else {  // ==1
+					// 	element.style.color = 'rgba(128, 128, 128, 0.2)';
+					// }
 
+					// Only gray out when wi1 == 1
+					if (Number(roundedWi1Text) == 1) {
+						var grey = 'rgba(128, 128, 128, 0.2)';
+						element.style.color = grey;
+						element_compare.style.color = grey;
+						element2.style.color = grey;
+						document.getElementById('compX_'+i).style.color = grey;
+					}
+					element2.style.color = wi1 >= 0 ? '' : '#fb6666';
 				} else {
 					element.style.color = '';
-					// element2.style.color = '';
+					element2.style.color = '';
 				}
 				
 				// if (!editValues && roundedWi1Text == '1') { element.classList.add('w_i1_0'); }
@@ -345,14 +374,6 @@ function renderUI(atts, globalModel, data) {
 		document.getElementById('text_' + 'w'+i+'.1').title = wi1_title;
 		
 		if (hideFactor == i || hideFactor <= -2) {
-			// if (xaiType != 'transferable' && domainId == 0) {
-			// 	document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
-			// 	document.getElementById('text_' + 'w'+i).title = '';
-			// }
-			// const hideElement = document.getElementById('text_' + 'w'+i+'.1');
-			// hideElement.innerHTML = inputFactorHTML(i, wi1, wi1_title, true);
-			// hideElement.title = '';
-
 			if (domainId == 0 || hideFactor == -5) {
 				document.getElementById('text_' + 'w'+i).innerHTML = inputFactorHTML(i, wi0, wi0_title);
 				document.getElementById('text_' + 'w'+i).title = '';
@@ -367,6 +388,7 @@ function renderUI(atts, globalModel, data) {
 				if (xaiType != 'transferable') {
 					hideElement.classList.add('subspaceFactorBlack');
 				}
+				document.getElementById('text_' + 'w'+i+'.1_compare').innerHTML = inputCompHTML(i);
 			}
 
 			const element2 = document.getElementById('text_' + 'w'+i+'.2');
@@ -627,8 +649,10 @@ function generateAttributeRows() {
 			<td class="tg-c3ot3 xaiRight">&times;</td>
 			<td class="tg-c3ot2 showTransfer">(</td>
 			<td class="tg-eqtu showDomain1 no‑select"><div id="text_w${i}">w${i}</div></td>
-			<td class="tg-c3ot2 showTransfer">×</td>
-			<td class="tg-eqtu showDomain2 no‑select"><div id="text_w${i}.1" class="subspaceFactor">w${i}.1</div></td>
+			<!-- <td class="tg-c3ot2 showTransfer">×</td> -->
+			<td class="tg-eqtu-scale showDomain2 no‑select"><div id="text_w${i}.1" class="subspaceFactor">w${i}.1</div></td>
+			<td class="tg-eqtu-scale-comp showDomain2"><div class="subspaceFactor" id="compX_${i}">X </div></td>
+			<td class="tg-eqtu-scale-comp showDomain2 no‑select"><div id="text_w${i}.1_compare" class="subspaceFactor">compare</div></td>
 			<td class="tg-c3ot2 showNewFactor" style="display: none;">=</td>
 			<td class="tg-eqtu showNewFactor no‑select" style="display: none;"><div id="text_w${i}.2">w${i}.2</div></td>
 			<td class="tg-c3ot2 showTransfer">)</td>
@@ -712,22 +736,33 @@ const calculateYe = function(el) {
 	if (el) { el.classList.add('inputEdited'); }
 
 	ye = 0;
+	let allYi = [];
 	for (let i = 0; i <= actualAttributeCount; i++) {
-		ye += calculateYi(i);
+		allYi.push(calculateYi(i));
+	}
+	for (let i = 0; i <= actualAttributeCount; i++) {
+		if (allYi[i] == '?') {
+			ye = '?';
+			break;
+		}
+		ye += allYi[i];
 	}
 	const text_ye = document.getElementById('text_yExplain');
-	text_ye.innerHTML = roundToPrecision(ye, 2, false);
-	text_ye.title = thousands(ye, 5, false);
+	text_ye.innerHTML = ye == '?' ? '?' : roundToPrecision(ye, 2, false);
+	text_ye.title = ye == '?' ? '?' : thousands(ye, 5, false);
 	
-	dy = appType == 'classification' ? (ye - yAI) / 100 : (ye - yAI) / yAI;
-	renderDyUI(dy);
+	if (ye != '?') {
+		dy = appType == 'classification' ? (ye - yAI) / 100 : (ye - yAI) / yAI;
+		renderDyUI(dy);
+	}
 }
 const calculateYi = function(i) {
 	const input_vi = document.getElementById('input_' + 'v'+i);
 	const input_wi0 = document.getElementById('input_' + 'w'+i);
 	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
+	const input_comp = document.getElementById('input_comp' + i);
 	
-	let wi0, wi1;
+	let wi0, wi1, comp;
 	if (hideFactor <= -2 || (hideFactor > 0 && hideFactor == i)) { 
 		if (xaiType == 'isolated') {
 			wi0 = domainId == 0 ? Number(input_wi0.value) : instance.w[i];
@@ -739,6 +774,31 @@ const calculateYi = function(i) {
 			} else {
 				wi0 = domainId == 0 ? Number(input_wi0.value) : instance.wDomain1[i];
 				wi1 = domainId == 1 ? Number(input_wi1.value) : 1;
+			}
+			comp = domainId == 1 ? input_comp.value : '';
+			if (hideFactor == -5 || domainId == 1) {   // wi1 is read from input box
+				switch (comp) {
+					case 'Bigger':
+						break;
+					case 'Smaller':
+						wi1 = 1 / wi1;
+						break;
+					case 'Similar':   // 如果此时wi1不等于1，则自动把input_comp的值设置为'Select...'
+						if (wi1 != 1) {
+							input_comp.value = 'Select...';
+						}
+						break;
+					case 'Bigger (Opp)':
+						wi1 = -wi1;
+						break;
+					case 'Smaller (Opp)':
+						wi1 = -1 / wi1;
+						break;
+				}
+				if (input_comp.value == 'Select...') {
+					document.getElementById('text_' + 'w'+i+'.2').innerHTML = '?';  // Set New Factor to ?
+					return '?';  // Return yPartial as ?
+				}
 			}
 		}
 		// 只有当输入框有值时才设置title
@@ -754,7 +814,7 @@ const calculateYi = function(i) {
 	}
 
 	let vi = instance.v[i];
-	if (editValues) { 
+	if (editValues) {
 		vi = i == 0 ? 1 : Number(input_vi.value);
 		input_vi.title = titleDesc(atts.y_unitName, i, vi);
 	}
@@ -768,6 +828,7 @@ const calculateYi = function(i) {
 		const element2 = document.getElementById('text_' + 'w'+i+'.2');
 		element2.innerHTML = roundToPrecision(newFactor, i == 0 ? 2 : 1, false);
 		element2.title = thousands(newFactor, 5, false);
+		element2.style.color = newFactor >= 0 ? '' : '#fb6666';
 	}
 	
 	const text_yi = document.getElementById('text_' + 'y'+i);   // yPartial
@@ -829,6 +890,7 @@ Papa.parse("./transferable-xai-app-multitask-attributes.csv", {
 					header: true,
 					dynamicTyping: true,
 					complete: function(results) {
+						//console.log('data_results', results);
 						renderUI(atts, globalModel, results.data);
 					}
 				});
@@ -860,15 +922,19 @@ Papa.parse("./transferable-xai-app-multitask-attributes.csv", {
 .tg-c3ow3{border-color:#2e8112;text-align:center;border: 2px #000 solid; width:100px;}
 .tg-dvpl{border-color:inherit;text-align:right;}
 .tg-0pky{border-color:inherit;text-align:left;}
-.tg-eqtu{background-color:#cbf4be;color:#000;border-color:inherit;text-align:right;padding-right:10px}
-.tg-eqtu0{background-color:#eafce4;color:#000;border-color:inherit;text-align:right;padding-right:10px}
+.tg-eqtu{background-color:#cbf4be;color:#000;border-color:inherit;text-align:center;padding-right:10px}
+.tg-eqtu-scale{background-color:#cbf4be;color:#000;border-color:inherit;text-align:right;padding-right:1px !important}
+.tg-eqtu-scale-comp{background-color:#cbf4be;color:#000;border-color:inherit;text-align:left;padding-left:1px !important}
+.tg-eqtu0{background-color:#eafce4;color:#000;border-color:inherit;text-align:center;padding-right:10px}
+.tg-eqtu0-scale{background-color:#eafce4;color:#000;border-color:inherit;text-align:right;padding-right:1px !important}
+.tg-eqtu0-scale-comp{background-color:#eafce4;color:#000;border-color:inherit;text-align:left;padding-left:1px !important}
 .tg-c3ot0{background-color:#eafce4;color:#000;border-color:inherit;text-align:center;}
 th {vertical-align:bottom;font-weight:bold;}
 body {margin:0px; padding:0px}
 .subspaceName {color:#2e8112}
 .subspace0 {color:#8c0791}
 .subspace1 {color:#ce1101}
-.subspaceFactor {color:#2e8112}
+/* .subspaceFactor {color:#2e8112} */
 /* .w_i1_0 {color:#a1d590} */
 .subspaceFactorBlack {color:#000000}
 .subspaceFactorGray {color:#6e6d6d}
@@ -879,7 +945,8 @@ tr.adjustment {opacity:1;}
 .tutorial {
   display:inline-block;border-radius:50%;background:#0070C0;color:#fff; box-shadow: 1px 2px 3px 0px #999; visibility:hidden;
   padding:0.2em; height:0.9em; aspect-ratio:1/1; line-height:1em;text-align:center;}
-.inputFactor {text-align:right;width:88px;}
+.inputFactor {text-align:right;width:45px;}
+.inputComp {text-align:left;width:90px;}
 .inputValue {text-align:center;width:60px;}
 .inputEdited {background-color:#ff9; border: 1px dashed #000;}
 
@@ -911,6 +978,7 @@ meter::-webkit-meter-optimum-value { background: green; }
 meter::-webkit-meter-suboptimum-value { background: green; }
 meter::-webkit-meter-even-less-good-value { background: red; }
 meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
+
 </style>
 
 <table class="tg" border="0">
@@ -921,8 +989,8 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     <th class="tg-c3ot"></th>
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ow showDomain1"><span class="tutorial" id="tutorial3">4</span></th>
-    <th class="tg-c3ot showTransfer"></th>
-    <th class="tg-c3ow showDomain2"><span class="tutorial" id="tutorial3b">4b</span></th>
+    <!-- <th class="tg-c3ot showTransfer"></th> -->
+    <th class="tg-c3ow showDomain2" colspan="3"><span class="tutorial" id="tutorial3b">4b</span></th>
 	<th class="tg-c3ot showNewFactor"></th>
 	<th class="tg-c3ot showNewFactor"></th>
     <th class="tg-c3ot showTransfer"></th>
@@ -935,8 +1003,8 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
 	<th class="tg-c3ot"></th>
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ow showDomain1" style="vertical-align:top">Factors when predicting<br/><span id="text_domain1Name" class="subspace0">Typical Case</span></th>
-    <th class="tg-c3ot showTransfer"></th>
-    <th class="tg-c3ow showDomain2" style="vertical-align:top; padding: 5px 0; width:115px" id="domain2Title"><span id="domain2TitleText">Scales when predicting</span><br/><span id="text_subspaceName" class="subspaceName">Special Case</span></th>
+    <!-- <th class="tg-c3ot showTransfer"></th> -->
+    <th class="tg-c3ow showDomain2" style="vertical-align:top; padding: 5px 0; width:115px" id="domain2Title" colspan="3"><span id="domain2TitleText">Scales when predicting</span><br/><span id="text_subspaceName" class="subspaceName">Special Case</span></th>
     <th class="tg-c3ot showNewFactor"></th>
     <th class="tg-c3ow0 showNewFactor" style="vertical-align:top; display: none;"><span id="domain4TitleText">New</br>Factor</span></th>
     <th class="tg-c3ot showTransfer"></th>
@@ -954,8 +1022,11 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     <td class="tg-c3ot3 xaiRight">&times;</td>
     <td class="tg-c3ot2 showTransfer xaiTop">(</td>
     <td class="tg-eqtu showDomain1 xaiTop no‑select"><div id="text_w1">w1</div></td>
-    <td class="tg-c3ot2 showTransfer xaiTop">×</td>
-    <td class="tg-eqtu showDomain2 xaiTop no‑select"><div id="text_w1.1" class="subspaceFactor">w1.1</div></td>
+    <!-- <td class="tg-c3ot2 showTransfer xaiTop">×</td> -->
+    
+	<td class="tg-eqtu-scale showDomain2 xaiTop no‑select"><div id="text_w1.1" class="subspaceFactor">w1.1</div></td>
+	<td class="tg-eqtu-scale-comp showDomain2 xaiTop"><div class="subspaceFactor" id="compX_1">X </div></td>
+	<td class="tg-eqtu-scale-comp showDomain2 xaiTop no‑select"><div id="text_w1.1_compare" class="subspaceFactor">compare</div></td>
     <td class="tg-c3ot2 xaiTop showNewFactor" style="display: none;">=</td>
     <td class="tg-eqtu xaiTop showNewFactor no‑select" style="display: none;"><div id="text_w1.2">w1.2</div></td>
     <td class="tg-c3ot2 showTransfer xaiTop">)</td>
@@ -1000,8 +1071,10 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     <td class="tg-c4wh xaiRight">+</td>
     <td class="tg-c3ot0 showTransfer xaiBottom">(</td>
     <td class="tg-eqtu0 showDomain1 xaiBottom no‑select"><div id="text_w0">w0</div></td>
-    <td class="tg-c3ot0 showTransfer xaiBottom">×</td>
-    <td class="tg-eqtu0 showDomain2 xaiBottom no‑select"><div id="text_w0.1" class="subspaceFactor">w0.1</div></td>
+    <!-- <td class="tg-c3ot0 showTransfer xaiBottom">×</td> -->
+    <td class="tg-eqtu0-scale showDomain2 xaiBottom no‑select"><div id="text_w0.1" class="subspaceFactor">w0.1</div></td>
+	<td class="tg-eqtu0-scale-comp showDomain2 xaiBottom"><div class="subspaceFactor" id="compX_0">X </div></td>
+	<td class="tg-eqtu0-scale-comp showDomain2 xaiBottom no‑select"><div id="text_w0.1_compare" class="subspaceFactor">compare</div></td>
     <td class="tg-c3ot0 xaiBottom showNewFactor" style="display: none;">=</td>
     <td class="tg-eqtu0 xaiBottom showNewFactor no‑select" style="display: none;"><div id="text_w0.2">w0.2</div></td>
     <td class="tg-c3ot0 showTransfer xaiBottom">)</td>
