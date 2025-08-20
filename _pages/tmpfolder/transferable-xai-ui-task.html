@@ -431,16 +431,7 @@ function renderUI(atts, globalModel, data) {
 		Array.from(document.getElementsByClassName('showTransfer')).forEach(el => el.style.display = 'none');
 		
 		// 隐藏Partial Score列（y1, y2, y3...）
-		for (let i = 0; i <= actualAttributeCount; i++) {
-			const yElement = document.getElementById('text_y' + i);
-			if (yElement) {
-				yElement.parentElement.style.display = 'none';
-			}
-		}
-		const yPartial = document.getElementById('td_yPartial');
-		if (yPartial) {
-			yPartial.style.display = 'none';
-		}
+		Array.from(document.getElementsByClassName('showPartial')).forEach(el => el.style.display = 'none');
 		
 		// 隐藏AI Explainer列
 		const aiExplainerTable = document.getElementById('td_yExplain');
@@ -606,7 +597,7 @@ function generateAttributeRows() {
 			<td class="tg-eqtu showNewFactor no‑select" style="display: none;"><div id="text_w${i}.2">w${i}.2</div></td>
 			<td class="tg-c3ot2 showTransfer">)</td>
 			<td class="tg-c3ot3 xaiLeft" id="td_calc_y${i}">=</td>
-			<td class="tg-zme7"><div id="text_y${i}">y${i}</div></td>
+			<td class="tg-zme7 showPartial"><div id="text_y${i}">y${i}</div></td>
 		`;
 		
 		// 如果hideFactor == -4，隐藏不需要的列
@@ -856,7 +847,7 @@ tr.adjustment {opacity:0.50;}
 	<th class="tg-c3ot showNewFactor"></th>
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ot"></th>
-    <th class="tg-c3ow"><span class="tutorial" id="tutorial4">5</span></th>
+    <th class="tg-c3ow showPartial"><span class="tutorial" id="tutorial4">5</span></th>
   </tr>
   <tr>
     <th class="tg-dvpl">Attributes</th>
@@ -870,7 +861,7 @@ tr.adjustment {opacity:0.50;}
     <th class="tg-c3ow0 showNewFactor" style="vertical-align:top; display: none;"><span id="domain4TitleText">New</br>Factor</span></th>
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ot"></th>
-    <th class="tg-c3ow" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
+    <th class="tg-c3ow showPartial" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
   </tr>
 </thead>
 <tbody>
@@ -887,7 +878,7 @@ tr.adjustment {opacity:0.50;}
     <td class="tg-eqtu xaiTop showNewFactor no‑select" style="display: none;"><div id="text_w1.2">w1.2</div></td>
     <td class="tg-c3ot2 showTransfer xaiTop">)</td>
     <td class="tg-c3ot3 xaiLeft" id="td_calc_y1">=</td>
-    <td class="tg-zme7"><div id="text_y1">y1</div></td>
+    <td class="tg-zme7 showPartial"><div id="text_y1">y1</div></td>
     <td class="tg-lboi" rowspan="8" id="td_brace">}</td>     <!-- the rowspan number will be updated by generateAttributeRows() -->
     <td class="tg-lboi" rowspan="8" id="td_calc_ye">+</td>
     <td class="tg-lboi" rowspan="8">&rarr;</td>
@@ -931,7 +922,7 @@ tr.adjustment {opacity:0.50;}
     <td class="tg-eqtu0 xaiBottom showNewFactor no‑select" style="display: none;"><div id="text_w0.2">w0.2</div></td>
     <td class="tg-c3ot0 showTransfer xaiBottom">)</td>
     <td class="tg-c3ot3 xaiLeft" id="td_calc_y0">=</td>
-    <td class="tg-zme7"><div id="text_y0">y0</div></td>
+    <td class="tg-zme7 showPartial"><div id="text_y0">y0</div></td>
   </tr>
   <tr>
     <td class="tg-dvpl" id="td_reset"><button onclick="location.reload()">Reset</button></td>

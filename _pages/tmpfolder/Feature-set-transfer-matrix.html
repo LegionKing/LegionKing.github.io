@@ -27,8 +27,8 @@
          }
         
         .matrix td {
-            width: 58px;
-            height: 58px;
+            width: 66px;
+            height: 66px;
             border: 1px solid black;
             text-align: center;
             vertical-align: middle;
@@ -36,10 +36,10 @@
             /* overflow: visible; */
             /* white-space: nowrap; */
             box-sizing: border-box;
-            min-width: 58px;
-            max-width: 58px;
-            min-height: 58px;
-            max-height: 58px;
+            min-width: 66px;
+            max-width: 66px;
+            min-height: 66px;
+            max-height: 66px;
         }
 
         .matrix-value {
@@ -137,7 +137,6 @@
             white-space: nowrap;
         }
         .column-header-value-text {  /* Only for column header value */
-            transform: rotate(-90deg);
             transform-origin: center;
             display: inline-block;
             white-space: nowrap;
@@ -201,41 +200,73 @@
          }
 
         /* 调整前几行 */
-        .matrix tr:nth-child(1) td,
+        .matrix tr:nth-child(1) td {
+            border: none;   /* 移除边框 */
+            height: 28px;   /* 高度减少 */
+            vertical-align: bottom;   /* 文字下对齐 */
+            min-height: 28px;
+            max-height: 30px;
+        }
         .matrix tr:nth-child(3) td {
             border: none;   /* 移除边框 */
-            height: 30px;   /* 高度减少 */
+            height: 20px;   /* 高度减少 */
             vertical-align: bottom;   /* 文字下对齐 */
-            min-height: 35px;
-            max-height: 35px;
+            min-height: 20px;
+            max-height: 20px;
+            padding-bottom: 0px;
+        }
+        .matrix tr:nth-child(4) td {
+            border: none;   /* 移除边框 */
+            height: 20px;   /* 高度减少 */
+            vertical-align: bottom;   /* 文字下对齐 */
+            min-height: 20px;
+            max-height: 20px;
+            padding-top: 0px;
         }
         .matrix tr:nth-child(2) td {
             border: none;   /* 移除边框 */
-            height: 50px;   /* 高度减少 */
+            height: 60px;   /* 第二行加高 */
             vertical-align: bottom;   /* 文字下对齐 */
-            min-height: 35px;
-            max-height: 35px;
+            min-height: 60px;
+            max-height: 60px;
         }
         
         /* 调整前三列 */
-         .matrix td:nth-child(1),
-         .matrix td:nth-child(3) {
+         .matrix td:nth-child(1) {
              border: none;    /* 移除边框 */
              transform-origin: center;
-             width: 30px;
+             width: 28px;
              text-align: bottom;    /* 文字下对齐 */
-             min-width: 35px;
-             max-width: 35px;
+             min-width: 28px;
+             max-width: 30px;
+         }
+         .matrix td:nth-child(3) {
+            border: none;    /* 移除边框 */
+            transform-origin: center;
+            width: 20px;
+            text-align: bottom;    /* 文字下对齐 */
+            min-width: 20px;
+            max-width: 20px;
+            padding-right: 0px;
+         }
+         .matrix td:nth-child(4) {
+            border: none;    /* 移除边框 */
+            transform-origin: center;
+            width: 20px;
+            text-align: bottom;    /* 文字下对齐 */
+            min-width: 20px;
+            max-width: 20px;
+            padding-left: 0px;
          }
          
          /* 第二列加宽 */
          .matrix td:nth-child(2) {
              border: none;    /* 移除边框 */
              transform-origin: center;
-             width: 50px;
+             width: 70px;
              text-align: bottom;    /* 文字下对齐 */
-             min-width: 50px;
-             max-width: 50px;
+             min-width: 70px;
+             max-width: 70px;
          }
          
          /* 共同特征区域样式 */
@@ -377,17 +408,23 @@
         	const rowDomain1 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 0);
         	const rowDomain2 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 1);
         	const wDomain1 = new Array(actualAttributeCount1 + 1).fill(0);
-        	const wDomain2 = new Array(actualAttributeCount2 + 1).fill(0);  // 
+        	const wDomain2 = new Array(actualAttributeCount2 + 1).fill(0);
+            const meanDomain1 = new Array(actualAttributeCount1 + 1).fill(0);
+            const meanDomain2 = new Array(actualAttributeCount2 + 1).fill(0);
         	for (let i = 0; i <= actualAttributeCount1; i++) {
         		wDomain1[i] = data[rowDomain1]['w'+i];
+                meanDomain1[i] = data[rowDomain1]['mean'+i];
         	}
             wDomain2[0] = data[rowDomain1]['w0'];    // 数据文件里的是已经加上ExtraFactorBias的值，需要在UI中显示过程，所以这里使用feature set 1的w0
             for (let i = 1; i <= actualAttributeCount2; i++) {
                 wDomain2[i] = data[rowDomain2]['w'+i];
+                meanDomain2[i] = data[rowDomain2]['mean'+i];
             }
         	return {
         		wDomain1: wDomain1,
         		wDomain2: wDomain2,
+                meanDomain1: meanDomain1,
+                meanDomain2: meanDomain2,
         		domain1Name: data[rowDomain1].domainName,
         		domain2Name: data[rowDomain2].domainName,
         	};
@@ -477,6 +514,10 @@
             var value2 = instanceDomain2;
             var factor1 = globalModel.wDomain1;
             var factor2 = globalModel.wDomain2;
+            var mean1 = globalModel.meanDomain1;
+            var mean2 = globalModel.meanDomain2;
+            var valueMinusMean1 = value1.map((v, i) => roundToPrecision(v - mean1[i], 1));
+            var valueMinusMean2 = value2.map((v, i) => roundToPrecision(v - mean2[i], 1));
             var valueFactor1;
             var valueFactor2;
             
@@ -498,9 +539,13 @@
             // global parameters: extraBias, extraFactorBias. Already extracted
 
 
-        function roundToPrecision(number, precision, sparse = false) {
+        function roundToPrecision(number, precision, sparse = false, force = false) {
             if (Math.abs(number) >= 10) { //取整
-                return Math.round(number);
+                if (force) {
+                    return Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision);
+                } else {
+                    return Math.round(number);
+                }
             }
             
             // 之前的版本，round到对应小数位数中取0或5最接近的值
@@ -537,7 +582,7 @@
         
         function approximateText() {
             for (let i = 0; i < value1.length; i++) {
-                approxValue1[i] = roundToPrecision(value1[i], 3);
+                approxValue1[i] = featureSet1[i] == 'BMI' ? roundToPrecision(value1[i], 1, false, true) : roundToPrecision(value1[i], 3);   // BMI特殊处理
             }
             for (let i = 0; i < value2.length; i++) {
                 approxValue2[i] = roundToPrecision(value2[i], 3);
@@ -668,17 +713,21 @@
             // Reorder value1, factor1, and extraBias based on feature1IndexMap
             value1 = reorderArray(value1, feature1IndexMap);
             factor1 = reorderArray(factor1, feature1IndexMap);
+            mean1 = reorderArray(mean1, feature1IndexMap);
             extraBias = reorderArray(extraBias, feature1IndexMap);
             attsDomain1.v_max = reorderArray(attsDomain1.v_max, feature1IndexMap);
             attsDomain1.v_min = reorderArray(attsDomain1.v_min, feature1IndexMap);
             attsDomain1.v_step = reorderArray(attsDomain1.v_step, feature1IndexMap);
+            valueMinusMean1 = reorderArray(valueMinusMean1, feature1IndexMap);
 
             // Reorder value2 and factor2 based on feature2IndexMap
             value2 = reorderArray(value2, feature2IndexMap);
             factor2 = reorderArray(factor2, feature2IndexMap);
+            mean2 = reorderArray(mean2, feature2IndexMap);
             attsDomain2.v_max = reorderArray(attsDomain2.v_max, feature2IndexMap);
             attsDomain2.v_min = reorderArray(attsDomain2.v_min, feature2IndexMap);
             attsDomain2.v_step = reorderArray(attsDomain2.v_step, feature2IndexMap);
+            valueMinusMean2 = reorderArray(valueMinusMean2, feature2IndexMap);
 
             // 构建排序后的matrixData
             const sortedMatrixData = [];
@@ -697,8 +746,8 @@
         function createMatrix() {
             const m = featureSet1.length;
             const n = featureSet2.length;
-            valueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
-            valueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
+            valueFactor1 = transformType == "value" ? value1 : factor1;
+            valueFactor2 = transformType == "value" ? value2 : factor2;
             approxValueFactor1 = transformType == "value" ? approxValue1 : approxFactor1;
             approxValueFactor2 = transformType == "value" ? approxValue2 : approxFactor2;
             
@@ -709,13 +758,13 @@
             const titleRow = table.insertRow();
             
             // Empty corner cells for title row
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 4; i++) {
                 const titleCornerCell = titleRow.insertCell();
                 titleCornerCell.className = 'corner';
                 titleCornerCell.textContent = '';
             }
             
-            // Title spanning from column 3 to last column
+            // Title spanning from column 4 to last column
             const titleCell = titleRow.insertCell();
             titleCell.className = 'title-cell';
             titleCell.innerHTML = 'Attributes 2 <span class="title-button" data-type="value">Values</span> <span class="title-button" data-type="factor">Factors</span>';
@@ -725,7 +774,7 @@
             const headerRow = table.insertRow();
     
             // Empty corner cells
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 4; i++) {
                 const cornerCell = headerRow.insertCell();
                 cornerCell.className = 'corner';
                 cornerCell.textContent = '';
@@ -740,25 +789,35 @@
                  span.innerHTML = featureSet2[j];
                  cell.appendChild(span);
              }
-    
-            // Add hidden column
-            const hiddenCell = headerRow.insertCell();
-            hiddenCell.className = 'hidden-column';
-            hiddenCell.textContent = '';
-    
-            // Add transfer adjustment column header
-            const transferHeaderCell = headerRow.insertCell();
-            transferHeaderCell.className = 'row-header';
-            const transferHeaderSpan = document.createElement('span');
-            transferHeaderSpan.className = 'row-header-text';
-            transferHeaderSpan.textContent = 'Adjustment change';
-            transferHeaderSpan.style.transform = 'translate(-45%, -20%)';  // 微调，避免文字重叠
-            transferHeaderCell.appendChild(transferHeaderSpan);
-    
+            
+            // create (value - mean) row 
+            const minusMeanRow = table.insertRow();
+            for (let i = 0; i < 4; i++) {
+                const cornerCell = minusMeanRow.insertCell();
+                cornerCell.className = 'corner';
+                cornerCell.textContent = "";
+            }
+            for (let j = 0; j < n; j++) {
+                const cell = minusMeanRow.insertCell();
+                cell.className = 'row-header-value';
+                const span = document.createElement('span');
+                span.className = 'row-header-value-text';
+                if (transformType == 'value') {
+                    span.innerHTML = (categoricalAttributes.includes(featureSet2[j])) ? category(approxValueFactor2[j]) : approxValueFactor2[j];
+                    span.innerHTML += ('<span style="color:rgba(128, 128, 128, 0.4)">-' + (mean2[j] < 0? '(':'') + roundToPrecision(mean2[j], 1) + (mean2[j] < 0? ')':'') + '</span>');
+                    span.title = (categoricalAttributes.includes(featureSet2[j])) ? category(valueFactor2[j]) : thousands(valueFactor2[j], 5);
+                    span.title += ('-' + (mean2[j] < 0? '(':'') + thousands(mean2[j], 5) + (mean2[j] < 0? ')':''));
+                } else {
+                    span.innerHTML = '';
+                    span.title = '';
+                }
+                cell.appendChild(span);
+            }
+
             // Create value/factor row
             const valueRow = table.insertRow();
             // Empty corner cells
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 4; i++) {
                 const cornerCell = valueRow.insertCell();
                 cornerCell.className = 'corner';
                 cornerCell.textContent = "";
@@ -769,7 +828,7 @@
                  cell.className = 'row-header-value';
                  const span = document.createElement('span');
                  span.className = 'row-header-value-text';
-                 span.textContent = (transformType == 'value' && categoricalAttributes.includes(featureSet2[j])) ? category(valueFactor2[j]) : valueFactor2[j];
+                 span.textContent = transformType == 'value' ? roundToPrecision(valueFactor2[j] - mean2[j], 1) : approxValueFactor2[j];
                  cell.appendChild(span);
      
                  if (transformType === "factor") {
@@ -784,20 +843,9 @@
                      });
                  }
              }
-
-    
-            // Add hidden column value
-            const hiddenValueCell = valueRow.insertCell();
-            hiddenValueCell.className = 'hidden-column';
-            hiddenValueCell.textContent = '';
-    
-            // Add transfer adjustment column value (empty for this row)
-            const transferValueCell = valueRow.insertCell();
-            transferValueCell.className = 'row-header-value';
-            transferValueCell.textContent = transformType == 'value' ? 1 : approxExtraFactorBias;
     
             // Create matrix rows
-            const titleStart = Math.floor((m + 0.999)/2) - 1;
+            const titleStart = Math.floor((m + 0.999)/2) - 1;  // the position to insert the title cell
             for (let i = 0; i < m; i++) {
                 const row = table.insertRow();
     
@@ -821,12 +869,30 @@
                 labelSpan.className = 'column-header-text';
                 labelSpan.innerHTML = featureSet1[i];
                 labelCell.appendChild(labelSpan);
+
+                // create (value - mean) cell
+                const minusMeanCell = row.insertCell();
+                minusMeanCell.className = 'column-header-value';
+                const minusMeanSpan = document.createElement('span');
+                minusMeanSpan.className = 'column-header-value-text';
+                if (transformType == 'value') {
+                    minusMeanSpan.innerHTML = (categoricalAttributes.includes(featureSet1[i])) ? category(approxValueFactor1[i]) : approxValueFactor1[i];
+                    var mean1_i_text = featureSet1[i] == 'BMI' ? roundToPrecision(mean1[i], 1, false, true) : roundToPrecision(mean1[i], 1);
+                    if (mean1[i] < 0) { mean1_i_text = '(' + mean1_i_text + ')'; }
+                    minusMeanSpan.innerHTML += ('<span style="color:rgba(128, 128, 128, 0.4)">-' + mean1_i_text + '</span>');
+                    minusMeanSpan.title = (categoricalAttributes.includes(featureSet1[i])) ? category(valueFactor1[i]) : thousands(valueFactor1[i], 5);
+                    minusMeanSpan.title += ('-' + (mean1[i] < 0? '(':'') + thousands(mean1[i], 5) + (mean1[i] < 0? ')':''));
+                } else {
+                    minusMeanSpan.innerHTML = '';
+                    minusMeanSpan.title = '';
+                }
+                minusMeanCell.appendChild(minusMeanSpan);
      
                 const valueCell = row.insertCell();
                 valueCell.className = 'column-header-value';
                 const valueSpan = document.createElement('span');
                 valueSpan.className = 'column-header-value-text';
-                valueSpan.textContent = (transformType == 'value' && categoricalAttributes.includes(featureSet1[i])) ? category(approxValueFactor1[i]) : approxValueFactor1[i];
+                valueSpan.textContent = transformType == 'value' ? roundToPrecision(valueFactor1[i] - mean1[i], 1) : approxValueFactor1[i];
                 valueCell.appendChild(valueSpan);
                 if (transformType === "value") {
                     valueCell.addEventListener('mouseenter', function(event) {
@@ -871,34 +937,6 @@
                         hideFormula();
                     });
                 }
-    
-                // Add hidden column
-                const hiddenMatrixCell = row.insertCell();
-                hiddenMatrixCell.className = 'hidden-column';
-                hiddenMatrixCell.textContent = '';
-    
-                // Add transfer adjustment column with extraBias values
-                const transferMatrixCell = row.insertCell();
-                transferMatrixCell.className = 'matrix-value';
-                const span = document.createElement('span');
-                span.className = 'matrix-value-text';
-                span.textContent = approxExtraBias[i] == 0? '' : (approxExtraBias[i] > 0 ? `×${approxExtraBias[i]}` : `×(${approxExtraBias[i]})`);
-                transferMatrixCell.appendChild(span);
-    
-                // Add hover event listeners
-                transferMatrixCell.addEventListener('mouseenter', function(event) {
-                    highlightRowAndColumns(i, -1, transformType);
-                    if (transformType === "value") {
-                        showFormula(i, event, transformType);
-                    } else {
-                        showFormula(-1, event, transformType);
-                    }
-                });
-    
-                transferMatrixCell.addEventListener('mouseleave', function() {
-                    clearHighlights();  
-                    hideFormula();
-                });
             }
             
             
@@ -908,9 +946,9 @@
             window.matrixTable = table;
             
             // 按Prof要求，不展示Bias的行列，这里先隐藏
-            table.rows[3].style.display = 'none';
+            table.rows[4].style.display = 'none';
             for (let i = 1; i < table.rows.length; i++) {
-                table.rows[i].cells[3].style.display = 'none';
+                table.rows[i].cells[4].style.display = 'none';
             }
             
             // Update button states and add click handlers
@@ -935,34 +973,29 @@
             
             if (transformType === "value") {
                 // Highlight the entire row (from column 3 to last)
-                const row = table.rows[rowIndex + 3]; // +3 because of title rows
-                for (let j = 2; j < row.cells.length; j++) {
+                const row = table.rows[rowIndex + 4]; // +3 because of title rows
+                for (let j = 3; j < row.cells.length; j++) {
                     row.cells[j].classList.add('highlight-row');
                 }
                 
                 // Highlight columns where the row has non-zero values
                 for (let j = 0; j < approxMatrixData[rowIndex].length; j++) {
                     if (approxMatrixData[rowIndex][j] !== 0) {
-                        const cell = table.rows[2].cells[j + 3];
+                        const cell = table.rows[3].cells[j + 4];
                         cell.classList.add('highlight-col');
                     }
                 }
-                if (approxExtraBias[rowIndex] !== 0) {
-                    const row = table.rows[2];
-                    const cell = row.cells[row.cells.length - 1];
-                    cell.classList.add('highlight-row');
-                }
             } else {
                 // Highlight the entire column (from row 3 to last) and the row where the column has non-zero values
-                const hightColIdx = colIndex == -1 ? table.rows[1].cells.length - 1 : colIndex + 3;
-                const col = table.rows[2].cells[hightColIdx];
+                const hightColIdx = colIndex + 4;
+                const col = table.rows[3].cells[hightColIdx];
                 col.classList.add('highlight-col');
                 for (let i = 0; i < approxMatrixData.length; i++) {
-                    const cell = table.rows[i + 3].cells[hightColIdx];
+                    const cell = table.rows[i + 4].cells[hightColIdx];
                     cell.classList.add('highlight-col');
                     // Highlight the row where the column has non-zero values
-                    if ((colIndex == -1 && approxExtraBias[i] !== 0) || (colIndex != -1 && approxMatrixData[i][colIndex] !== 0)) {
-                        const cell = table.rows[i + 3].cells[2];
+                    if (approxMatrixData[i][colIndex] !== 0) {
+                        const cell = table.rows[i + 4].cells[3];
                         cell.classList.add('highlight-row');
                     }
                 }
@@ -1037,12 +1070,12 @@
             let terms = [];
             
             if (transformType === "value") {
-                formula += `${approxValueFactor1[rowOrColIndex]} ≈ `;
+                formula += `${valueMinusMean1[rowOrColIndex]} ≈ `;
                 var calculateResult = 0;
                 for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
                     if (approxMatrixData[rowOrColIndex][j] !== 0) {
                         const matrixValue = approxMatrixData[rowOrColIndex][j];
-                        const headerValue = approxValueFactor2[j];
+                        const headerValue = valueMinusMean2[j];
                         calculateResult += matrixValue * headerValue;
                         
                         if (formula[formula.length - 2] != '≈') {
@@ -1051,16 +1084,11 @@
                         formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
                     }
                 }
-                if (approxExtraBias[rowOrColIndex] !== 0) {
-                    calculateResult += approxExtraBias[rowOrColIndex];
-                    formula += `+ 1 × ` + (approxExtraBias[rowOrColIndex] >= 0 ? `${approxExtraBias[rowOrColIndex]}` : `(${approxExtraBias[rowOrColIndex]})`) + ` `;
-                }
+                // For categorical attributes, we need to convert the result to a category
+                // if (categoricalAttributes.includes(featureSet1[rowOrColIndex])) {
+                //     formula += `= ${calculateResult.toFixed(2)} ` + (calculateResult >= 0.5 ? `≥` : `<`) + ` 0.5 ` + `→ ${category(approxValueFactor1[rowOrColIndex])}`;
+                // }
 
-                if (categoricalAttributes.includes(featureSet1[rowOrColIndex])) {
-                    formula += `= ${calculateResult.toFixed(2)} ` + (calculateResult >= 0.5 ? `≥` : `<`) + ` 0.5 ` + `→ ${category(approxValueFactor1[rowOrColIndex])}`;
-                }
-
-                // old version, attributes 1 on the RHS
                 // var calculateResult = 0;
                 // for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
                 //     if (approxMatrixData[rowOrColIndex][j] !== 0) {

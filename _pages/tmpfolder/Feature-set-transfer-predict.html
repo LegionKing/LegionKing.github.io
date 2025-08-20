@@ -18,6 +18,7 @@
     .tg-c3ot2{background-color:#cbf4be;color:#000;border-color:inherit;text-align:center;}
     .tg-c3ot3{background-color:#eafce4;border-color:inherit;text-align:center;}
     .tg-c3ow0{border-color:inherit;text-align:center;width:50px;}
+    .tg-c3ow0-mean{border-color:inherit;text-align:center;width:10px;color:#808688;opacity:0.5;}
     .tg-c3ow{border-color:inherit;text-align:center;width:105px;}
     .tg-c3ow2{border-color:inherit;text-align:center;border: 2px #000 solid; width:125px;}
     .tg-c3ow3{border-color:#2e8112;text-align:center;border: 2px #000 solid; width:100px;}
@@ -37,7 +38,7 @@
     .xaiTop {border-top: solid 2px #2e8112;} .xaiLeft {border-left: solid 2px #2e8112;} .xaiRight {border-right: solid 2px #2e8112;} .xaiBottom {border-bottom: solid 2px #2e8112;}
     meter {width:15px; cursor:pointer;}
     #text_dy_pad {font-weight:bold; padding: 1px 5px;}
-    tr.adjustment {opacity:0.50;}
+    tr.adjustment {opacity:1;}
     .tutorial {
       display:inline-block;border-radius:50%;background:#0070C0;color:#fff; box-shadow: 1px 2px 3px 0px #999; visibility:hidden;
       padding:0.2em; height:0.9em; aspect-ratio:1/1; line-height:1em;text-align:center;}
@@ -57,13 +58,29 @@
     	left: 50%;
     	transform: translate(-50%, -0%);
     }
+
+    /* 禁止选择文本 */
+    .no‑select {
+      /* 现代浏览器 */
+      user-select: none;
+      /* 兼容老浏览器前缀 */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+    
+    /* 控制meter的样式 */
+    meter::-webkit-meter-optimum-value { background: green; }
+    meter::-webkit-meter-suboptimum-value { background: green; }
+    meter::-webkit-meter-even-less-good-value { background: red; }
+    meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     </style>
     
     <table class="tg" border="0">
     <thead>
       <tr class="tutorialRow">
         <th class="tg-dvpl"><span class="tutorial" id="tutorial1">1</span></th>
-        <th class="" colspan="2"><span class="tutorial" id="tutorial2">2</span></th>
+        <th class="" colspan="4"><span class="tutorial" id="tutorial2">2</span></th>
         <th class="tg-c3ot"></th>
         <th class="tg-c3ot showTransfer"></th>
         <th class="tg-c3ow showDomain1"><span class="tutorial" id="tutorial3">4</span></th>
@@ -71,11 +88,11 @@
         <th class="tg-c3ow showDomain2"><span class="tutorial" id="tutorial3b">4b</span></th>
         <th class="tg-c3ot showTransfer"></th>
         <th class="tg-c3ot"></th>
-        <th class="tg-c3ow"><span class="tutorial" id="tutorial4">5</span></th>
+        <th class="tg-c3ow showPartial"><span class="tutorial" id="tutorial4">5</span></th>
       </tr>
       <tr>
         <th class="tg-dvpl">Attributes</th>
-        <th class="tg-c3ow0" colspan="2"><br/>Values</th>
+        <th class="tg-c3ow0" colspan="4"><br/>Relative Values</th>
         <th class="tg-c3ot"></th>
         <th class="tg-c3ot showTransfer"></th>
         <th class="tg-c3ow showDomain1" style="vertical-align:top">Factors when<br/><span id="text_domain1Name" class="subspace0">Typical Case</span></th>
@@ -83,22 +100,24 @@
         <th class="tg-c3ow showDomain2" style="vertical-align:top; padding: 5px 0; width:115px" id="domain2Title"><span id="domain2TitleText">Scales when predicting</span><br/><span id="text_subspaceName" class="subspaceName">Typical Case</span></th>
         <th class="tg-c3ot showTransfer"></th>
         <th class="tg-c3ot"></th>
-        <th class="tg-c3ow" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
+        <th class="tg-c3ow showPartial" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td class="tg-dvpl"><div id="text_a1">a1</div></td>
         <td class="tg-c3ow0"><div id="text_v1">v1</div></td>
+        <td class="tg-c3ow0-mean"><div id="text_minus">&minus;</div></td>
+        <td class="tg-c3ow0-mean"><div id="text_mean1">m1</div></td>
         <td class="tg-c3ot"><meter id="meter_v1" value=".5"></meter></td>
         <td class="tg-c3ot3 xaiRight">&times;</td>
         <td class="tg-c3ot2 showTransfer xaiTop">(</td>
-        <td class="tg-eqtu showDomain1 xaiTop"><div id="text_w1">w1</div></td>
+        <td class="tg-eqtu showDomain1 xaiTop no‑select"><div id="text_w1">w1</div></td>
         <td class="tg-c3ot2 showTransfer xaiTop">×</td>
-        <td class="tg-eqtu showDomain2 xaiTop"><div id="text_w1.1" class="subspaceFactor">w1.1</div></td>
+        <td class="tg-eqtu showDomain2 xaiTop no‑select"><div id="text_w1.1" class="subspaceFactor">w1.1</div></td>
         <td class="tg-c3ot2 showTransfer xaiTop">)</td>
         <td class="tg-c3ot3 xaiLeft" id="td_calc_y1">=</td>
-        <td class="tg-zme7"><div id="text_y1">y1</div></td>
+        <td class="tg-zme7 showPartial"><div id="text_y1">y1</div></td>
         <td class="tg-lboi" rowspan="8" id="td_brace">}</td>     <!-- the rowspan number will be updated by generateAttributeRows() -->
         <td class="tg-lboi" rowspan="8" id="td_calc_ye">+</td>
         <td class="tg-lboi" rowspan="8">&rarr;</td>
@@ -133,14 +152,16 @@
         <td class="tg-dvpl"><div id="text_a0">a0</div></td>
         <td class="tg-c3ow0"><div id="text_v0" style="display:none">v0</div></td>
         <td class="tg-c3ot"></td>
+        <td class="tg-c3ow0-mean"><div id="text_mean0"></div></td>
+        <td class="tg-c3ot"></td>
         <td class="tg-c4wh xaiRight">+</td>
         <td class="tg-c3ot0 showTransfer xaiBottom">(</td>
-        <td class="tg-eqtu0 showDomain1 xaiBottom"><div id="text_w0">w0</div></td>
+        <td class="tg-eqtu0 showDomain1 xaiBottom no‑select"><div id="text_w0">w0</div></td>
         <td class="tg-c3ot0 showTransfer xaiBottom">×</td>
-        <td class="tg-eqtu0 showDomain2 xaiBottom"><div id="text_w0.1" class="subspaceFactor">w0.1</div></td>
+        <td class="tg-eqtu0 showDomain2 xaiBottom no‑select"><div id="text_w0.1" class="subspaceFactor">w0.1</div></td>
         <td class="tg-c3ot0 showTransfer xaiBottom">)</td>
         <td class="tg-c3ot3 xaiLeft" id="td_calc_y0">=</td>
-        <td class="tg-zme7"><div id="text_y0">y0</div></td>
+        <td class="tg-zme7 showPartial"><div id="text_y0">y0</div></td>
       </tr>
       <tr>
         <td class="tg-dvpl"><button onclick="location.reload()">Reset</button></td>
@@ -218,7 +239,7 @@
         	row = appId_row;
         	
         	const maxAttributeCount = 8;
-        	const a = domainId == 0 ? ["Adjustment"] : ["Adjustment" + ""];   // 不知道extraFactorBias取什么名，先不放
+        	const a = domainId == 0 ? ["Average"] : ["Average" + ""];   // 不知道extraFactorBias取什么名，先不放
         	for (actualAttributeCount = 1; actualAttributeCount <= maxAttributeCount; actualAttributeCount++) {
         		if ('a'+actualAttributeCount in data[row] && data[row]['a'+actualAttributeCount]?.trim()) {
         			a.push(data[row]['a'+actualAttributeCount]);
@@ -255,16 +276,22 @@
         	const rowDomain1 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 0);
         	const rowDomain2 = data.findIndex(d => d.appId == appId && d.xaiType == xaiType && d.domainId == 1);
         	const wDomain1 = new Array(actualAttributeCount1 + 1).fill(0);
-        	const wDomain2 = new Array(actualAttributeCount2 + 1).fill(0);  // 
+        	const wDomain2 = new Array(actualAttributeCount2 + 1).fill(0);
+            const valueMean1 = new Array(actualAttributeCount1 + 1).fill(0);
+            const valueMean2 = new Array(actualAttributeCount2 + 1).fill(0);
         	for (let i = 0; i <= actualAttributeCount1; i++) {
         		wDomain1[i] = data[rowDomain1]['w'+i];
+                valueMean1[i] = data[rowDomain1]['mean'+i];
         	}
             for (let i = 0; i <= actualAttributeCount2; i++) {
                 wDomain2[i] = data[rowDomain2]['w'+i];
+                valueMean2[i] = data[rowDomain2]['mean'+i];
             }
         	return {
         		wDomain1: wDomain1,
         		wDomain2: wDomain2,
+                valueMean1: valueMean1,
+                valueMean2: valueMean2,
         		domain1Name: data[rowDomain1].domainName,
         		domain2Name: data[rowDomain2].domainName,
         	};
@@ -353,6 +380,7 @@
         // 将所有渲染相关的代码移到这个函数中
         function renderUI() {
             sortFeatures()
+            calculateNewBiasAndYPartial()
 
             var commonFeatureCount;
             actualAttributeCount = domainId == 0 ? actualAttributeCount1 : actualAttributeCount2;  // number of attributes, bias excluded. Will be updated
@@ -384,13 +412,17 @@
             	const categoricalAttributes = ['High blood pressure?', 'Chest pain?', 'Relative has diabetes?'];
             	elTextVi.innerHTML = categoricalAttributes.includes(atts.a[i]) ? category(vi) : roundToPrecision(vi, precision, false);
             	elTextVi.title = vi;
-            	
-            	renderValueMeterUI(i, vi);
             			
             	if (editValues == 1) {
-            		elTextVi.innerHTML = inputValueHTML(i, 0); // 当editValues==1时，输入框初始值设为0
+            		elTextVi.innerHTML = inputValueHTML(i, domainId == 0 ? globalModel.valueMean1[i] : globalModel.valueMean2[i]); // 当editValues==1时，输入框初始值设为该attribute的均值
             		elTextVi.title = '';//'?'; 
             	}
+                if (i > 0) {
+                	const elTextMean = document.getElementById('text_mean'+i);
+                	elTextMean.innerHTML = roundToPrecision(domainId == 0 ? globalModel.valueMean1[i] : globalModel.valueMean2[i], 1);
+                	elTextMean.title = thousands(domainId == 0 ? globalModel.valueMean1[i] : globalModel.valueMean2[i], 5);
+                }
+                renderValueMeterUI(i, vi);
 
                 let wi0 = 0, wi1 = 0;
                 let roundedWi1Text;
@@ -401,16 +433,12 @@
                 } else {
                 	wi1 = instance.w[i];
                 	const element = document.getElementById('text_' + 'w'+i+'.1');
-                    if (xaiType == 'transferable' && i == 0) {
-                        element.innerHTML = roundToPrecision(wi1, precision, false) + (extraFactorBias > 0 ? " + " : "") + roundToPrecision(extraFactorBias, precision, false);
-                    } else {
-                        element.innerHTML = roundToPrecision(wi1, precision, false);
-                    }
+                    element.innerHTML = roundToPrecision(wi1, precision, false);
                 	element.classList.add('subspaceFactorBlack');    // 当不是transferable模式且domainId == 1时，w1.1列使用黑色
                 }
 
                 const wi0_title = titleDesc(atts.y_unitName, i, wi0);
-                const wi1_title = titleDesc(atts.y_unitName, i, wi1, i == 0 ? extraFactorBias : undefined);
+                const wi1_title = titleDesc(atts.y_unitName, i, wi1);
                 document.getElementById('text_' + 'w'+i).title = wi0_title;
                 document.getElementById('text_' + 'w'+i+'.1').title = wi1_title;
                 
@@ -473,10 +501,7 @@
             			yElement.parentElement.style.display = 'none';
             		}
             	}
-            	const yPartial = document.getElementById('td_yPartial');
-            	if (yPartial) {
-            		yPartial.style.display = 'none';
-            	}
+            	Array.from(document.getElementsByClassName('showPartial')).forEach(el => el.style.display = 'none');
             	
             	// 隐藏AI Explainer列
             	const aiExplainerTable = document.getElementById('td_yExplain');
@@ -646,15 +671,17 @@
         		row.innerHTML = `
         			<td class="tg-dvpl"><div id="text_a${i}">a${i}</div></td>
         			<td class="tg-c3ow0"><div id="text_v${i}">v${i}</div></td>
+        			<td class="tg-c3ow0-mean"><div id="text_minus">&minus;</div></td>
+        			<td class="tg-c3ow0-mean"><div id="text_mean${i}">m${i}</div></td>
         			<td class="tg-c3ot"><meter id="meter_v${i}" value=".5"></meter></td>
         			<td class="tg-c3ot3 xaiRight">&times;</td>
         			<td class="tg-c3ot2 showTransfer">(</td>
-        			<td class="tg-eqtu showDomain1"><div id="text_w${i}">w${i}</div></td>
+        			<td class="tg-eqtu showDomain1 no‑select"><div id="text_w${i}">w${i}</div></td>
         			<td class="tg-c3ot2 showTransfer">×</td>
-        			<td class="tg-eqtu showDomain2"><div id="text_w${i}.1" class="subspaceFactor">w${i}.1</div></td>
+        			<td class="tg-eqtu showDomain2 no‑select"><div id="text_w${i}.1" class="subspaceFactor">w${i}.1</div></td>
         			<td class="tg-c3ot2 showTransfer">)</td>
         			<td class="tg-c3ot3 xaiLeft" id="td_calc_y${i}">=</td>
-        			<td class="tg-zme7"><div id="text_y${i}">y${i}</div></td>
+        			<td class="tg-zme7 showPartial"><div id="text_y${i}">y${i}</div></td>
         		`;
         		
         		// 如果hideFactor == -4，隐藏不需要的列
@@ -737,6 +764,7 @@
                     attsDomain1.v_max = reorderArray(attsDomain1.v_max, feature1IndexMap);
                     attsDomain1.v_step = reorderArray(attsDomain1.v_step, feature1IndexMap);
                     globalModel.wDomain1 = reorderArray(globalModel.wDomain1, feature1IndexMap);
+                    globalModel.valueMean1 = reorderArray(globalModel.valueMean1, feature1IndexMap);
                     instanceDomain1.v = reorderArray(instanceDomain1.v, feature1IndexMap);
                     instanceDomain1.w = reorderArray(instanceDomain1.w, feature1IndexMap);
                     instanceDomain1.yPartial = reorderArray(instanceDomain1.yPartial, feature1IndexMap);
@@ -745,6 +773,7 @@
                     attsDomain2.v_max = reorderArray(attsDomain2.v_max, feature2IndexMap);
                     attsDomain2.v_step = reorderArray(attsDomain2.v_step, feature2IndexMap);
                     globalModel.wDomain2 = reorderArray(globalModel.wDomain2, feature2IndexMap);
+                    globalModel.valueMean2 = reorderArray(globalModel.valueMean2, feature2IndexMap);
                     instanceDomain2.v = reorderArray(instanceDomain2.v, feature2IndexMap);
                     instanceDomain2.w = reorderArray(instanceDomain2.w, feature2IndexMap);
                     instanceDomain2.yPartial = reorderArray(instanceDomain2.yPartial, feature2IndexMap);
@@ -756,10 +785,14 @@
         function renderValueMeterUI(i, vi) {
         	const meter = document.getElementById('meter_' + 'v'+i);
         	if (i > 0) {
-        		meter.value = vi;
-        		meter.min = atts.v_min[i];
-        		meter.max = atts.v_max[i];
+                const mean = domainId == 0 ? globalModel.valueMean1[i] : globalModel.valueMean2[i];
+        		meter.value = vi - mean;
+        		meter.min = atts.v_min[i] - mean;
+        		meter.max = atts.v_max[i] - mean;
         		meter.title = "min: " + thousands(meter.min, i == 1 ? 3 : 2) + ", max: " + thousands(meter.max, i == 1 ? 3 : 2);
+                meter.low = 0;
+                meter.high = 0;
+                meter.optimum = meter.max;
         	}
         }
         
@@ -826,6 +859,8 @@
         	const input_vi = document.getElementById('input_' + 'v'+i);
         	const input_wi0 = document.getElementById('input_' + 'w'+i);
         	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
+
+            debugger;
         	
         	let wi0, wi1;
         	if (hideFactor <= -2) { 
@@ -853,10 +888,15 @@
         		input_vi.title = titleDesc(atts.y_unitName, i, vi);
         	}
         	
-        	const yi = vi * (domainId == 0 ? wi0 : wi1);
+            var yi;
+            if (domainId == 0) {
+                yi = (vi - globalModel.valueMean1[i]) * wi0;
+            } else {
+                yi = (vi - globalModel.valueMean2[i]) * wi1;
+            }
         	
         	const text_yi = document.getElementById('text_' + 'y'+i);   // yPartial
-        	text_yi.innerHTML = thousands(yi, 5, false);
+        	text_yi.innerHTML = roundToPrecision(yi, 1, false, true);
         	text_yi.title = thousands(yi, 5, false);
         	
         	renderValueMeterUI(i, vi);
@@ -869,9 +909,15 @@
         					y_unitName + " changes by " + thousands(wi, 5, false) + " for each increase in " + atts.a[i];
         }
         
-        function roundToPrecision(number, precision, sparse = false) {
+        function roundToPrecision(number, precision, sparse = false, force = false) {
             if (Math.abs(number) >= 10) { //取整
-                return Math.round(number).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+                var ret;
+                if (force) {
+                    ret = Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision);
+                } else {
+                    ret = Math.round(number);
+                }
+                return ret.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');   // 添加千位分隔符
             }
             
             // 之前的版本，round到对应小数位数中取0或5最接近的值
@@ -892,9 +938,31 @@
             return numberApprox;
         }
         
+        function calculateNewBiasAndYPartial() {
+            var wMeanSum1 = 0;
+            var wMeanSum2 = 0;
+            for (let i = 0; i <= actualAttributeCount1; i++) {
+                wMeanSum1 += globalModel.wDomain1[i] * globalModel.valueMean1[i];
+            }
+            for (let i = 0; i <= actualAttributeCount2; i++) {
+                wMeanSum2 += globalModel.wDomain2[i] * globalModel.valueMean2[i];
+            }
+            var newBias1 = globalModel.wDomain1[0] + wMeanSum1;
+            var newBias2 = globalModel.wDomain2[0] + wMeanSum2;
+            instanceDomain1.w[0] = newBias1;
+            instanceDomain2.w[0] = newBias2;
+            instanceDomain1.yPartial[0] = instanceDomain1.w[0];
+            instanceDomain2.yPartial[0] = instanceDomain2.w[0];
+            for (let i = 1; i <= actualAttributeCount1; i++) {
+                instanceDomain1.yPartial[i] = globalModel.wDomain1[i] * (instanceDomain1.v[i] - globalModel.valueMean1[i]);
+            }
+            for (let i = 1; i <= actualAttributeCount2; i++) {
+                instanceDomain2.yPartial[i] = globalModel.wDomain2[i] * (instanceDomain2.v[i] - globalModel.valueMean2[i]);
+            }
+        }
+
         // 页面加载时开始数据加载流程
         window.onload = function() {
-            // 数据加载完成后会自动调用 initializeMatrix()
         };
     </script>
 </body>

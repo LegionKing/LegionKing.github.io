@@ -34,6 +34,7 @@ Hide Factor <select id="input_hideFactor">
   <option value="3">3</option>
   <option value="4">4</option>
 </select>
+Edit Values <input id="input_editValues" type="checkbox" /> |
 <!--
 Domain <select id="input_domainId">
   <option value="0">Domain 1</option>
@@ -45,7 +46,6 @@ XAI Type <select id="input_xaiType">
   <option value="isolated">Isolated XAI</option>
   <option value="none">None</option>
 </select> |
-Edit Values <input id="input_editValues" type="checkbox" /> |
 -->
 Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 
@@ -53,7 +53,7 @@ Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 <div>URL: <a id="text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframe')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframe')">Copy URL</button></div>
 <iframe id="interactiveIframe" 
 		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&showPrediction=1" 
-		width="1280px" height="550px"
+		width="1280px" height="630px"
 		frameBorder="0" scrolling="no"
 		></iframe>
 
@@ -62,7 +62,7 @@ Show Prediction <input id="input_showPrediction" type="checkbox" checked />
 <div>URL: <a id="domain1_text_url" href=""></a> <button onclick="copyIframeHtml('interactiveIframeDomain1')">Copy Iframe</button> <button onclick="copyUrl('interactiveIframeDomain1')">Copy URL</button></div>
 <iframe id="interactiveIframeDomain1" 
 		src="Feature-set-transfer-matrix.html?appId=NHANES&id=7&precision=2&domainId=0&showPrediction=1&xaiType=transferable" 
-		width="1280px" height="310px"
+		width="1000px" height="310px"
 		frameBorder="0" scrolling="no"
 		></iframe>
 
@@ -106,30 +106,30 @@ function updateIframeUrl() {
 	// const xaiType = document.querySelector("#input_xaiType").value;
 	const tutorial = document.querySelector("#input_tutorial").value;
 	const hideFactor = document.querySelector("#input_hideFactor").value;
-	// const editValues = document.querySelector("#input_editValues").checked ? 1 : 0;
+	const editValues = document.querySelector("#input_editValues").checked ? 1 : 0;
 	const showPrediction = document.querySelector("#input_showPrediction").checked ? 1 : 0;
 	
 
 	const iframeDomain1 = document.querySelector("#interactiveIframeDomain1");
-	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=0&showPrediction="+showPrediction+"&xaiType=transferable&tutorial="+tutorial+"&hideFactor="+hideFactor;
+	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=0&showPrediction="+showPrediction+"&xaiType=transferable&tutorial="+tutorial+"&hideFactor="+hideFactor+"&editValues="+editValues;
 	iframeDomain1.src = url;
 	document.querySelector("#domain1_text_url").href = url;
 	document.querySelector("#domain1_text_url").innerHTML = url;
 
 	const iframeDomain2 = document.querySelector("#interactiveIframeDomain2");
-	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=1&showPrediction="+showPrediction+"&xaiType=transferable&tutorial="+tutorial+"&hideFactor="+hideFactor;
+	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=1&showPrediction="+showPrediction+"&xaiType=transferable&tutorial="+tutorial+"&hideFactor="+hideFactor+"&editValues="+editValues;
 	iframeDomain2.src = url;
 	document.querySelector("#domain2_text_url").href = url;
 	document.querySelector("#domain2_text_url").innerHTML = url;
 
 	const iframeIndependent1 = document.querySelector("#interactiveIframeIndependent1");
-	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=0&showPrediction="+showPrediction+"&xaiType=isolated&tutorial="+tutorial+"&hideFactor="+hideFactor;
+	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=0&showPrediction="+showPrediction+"&xaiType=isolated&tutorial="+tutorial+"&hideFactor="+hideFactor+"&editValues="+editValues;
 	iframeIndependent1.src = url;
 	document.querySelector("#independent1_text_url").href = url;
 	document.querySelector("#independent1_text_url").innerHTML = url;
 
 	const iframeIndependent2 = document.querySelector("#interactiveIframeIndependent2");
-	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=1&showPrediction="+showPrediction+"&xaiType=isolated&tutorial="+tutorial+"&hideFactor="+hideFactor;
+	url = htmlNamePredict+"?appId="+appId+"&id="+id+"&precision="+precision+"&domainId=1&showPrediction="+showPrediction+"&xaiType=isolated&tutorial="+tutorial+"&hideFactor="+hideFactor+"&editValues="+editValues;
 	iframeIndependent2.src = url;
 	document.querySelector("#independent2_text_url").href = url;
 	document.querySelector("#independent2_text_url").innerHTML = url;
@@ -155,7 +155,6 @@ function updateIframeUrl() {
 	const iframe = document.querySelector("#interactiveIframe");
 	url = htmlNameMatrix+"?appId="+appId+"&id="+id+"&precision="+precision+"&tutorial="+tutorial+"&hideFactor="+hideFactor;
 	iframe.src = url;
-	iframe.height = '550px';
 	document.querySelector("#text_url").href = url;
 	document.querySelector("#text_url").innerHTML = url;
 }
@@ -163,7 +162,7 @@ function updateIframeUrl() {
 function updateId() {
 	const input_id = document.querySelector("#input_id");
 	let id = input_id.value;
-	id = id < 1 ? 1 : id;
+	id = id < 0 ? 0 : id;
 	id = id > 2000 ? 2000 : id;
 	input_id.value = id;
 	updateIframeUrl();
@@ -200,7 +199,7 @@ document.querySelector("#input_precision").onchange = updateIframeUrl;
 // document.querySelector("#input_xaiType").onchange = updateIframeUrl;
 document.querySelector("#input_tutorial").onchange = updateIframeUrl;
 document.querySelector("#input_hideFactor").onchange = updateIframeUrl;
-// document.querySelector("#input_editValues").onchange = updateIframeUrl;
+document.querySelector("#input_editValues").onchange = updateIframeUrl;
 document.querySelector("#input_showPrediction").onchange = updateIframeUrl;
 
 updateIframeUrl();

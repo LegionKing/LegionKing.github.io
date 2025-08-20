@@ -8,7 +8,7 @@ Application <select id="input_appId">
   <option value="NHANES">NHANES</option>
   <option value="AirQuality">Air Quality</option>
 </select> |
-Case <input id="input_id" type="number" value="7" min="1" max="2000" size="2" maxlength="2"> (1-2000)
+Case <input id="input_id" type="number" value="7" min="0" max="2000" size="2" maxlength="2"> (0-2000)
 Domain <select id="input_domainId">
   <option value="0">Domain 1</option>
   <option value="1">Domain 2</option>
@@ -118,7 +118,7 @@ function updateIframeUrl() {
 function updateId() {
 	const input_id = document.querySelector("#input_id");
 	let id = input_id.value;
-	id = id < 1 ? 1 : id;
+	id = id < 0 ? 0 : id;
 	id = id > 2000 ? 2000 : id;
 	input_id.value = id;
 	updateIframeUrl();

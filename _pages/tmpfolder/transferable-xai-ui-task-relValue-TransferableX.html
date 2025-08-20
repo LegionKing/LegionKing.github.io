@@ -182,7 +182,7 @@ const inputFactorHTML = function(i, value, title, isB) {
 	const placeholder = xaiType == 'none' ? '?' : Number(value.toPrecision(i == 0 ? 3 : 2));
 	title = xaiType == 'none' || hideFactor <= -2 ? '' : title;
 	
-	return '<input id="input_w' + i + (isB ? '.1' : '') + '" class="inputFactor" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="'+value+'" step=0.1 title="'+title+'" autocomplete="off" />';  // If want to show k after the placeholder, add 'k' after />
+	return '<input id="input_w' + i + (isB ? '.1' : '') + '" class="inputFactor" type="number" onclick="activateInputs()" onchange="calculateYe(this)" placeholder="'+placeholder+'" value="'+value+(isB? '" min="1"': '"')+' step=0.1 title="'+title+'" autocomplete="off" />';  // If want to show k after the placeholder, add 'k' after />
 }
 
 const inputValueHTML = function(i, value) {
@@ -344,7 +344,14 @@ function renderUI(atts, globalModel, data) {
 						document.getElementById('compX_'+i).style.color = grey;
 					}
 					element2.style.color = wi1 >= 0 ? '' : '#fb6666';
-				} else {
+				} else if (hideFactor == -2 && domainId == 0) {
+					var grey = 'rgba(128, 128, 128, 0.2)';
+					element.style.color = grey;
+					element_compare.style.color = grey;
+					//element2.style.color = grey;
+					document.getElementById('compX_'+i).style.color = grey;
+				}
+				else {
 					element.style.color = '';
 					element2.style.color = '';
 				}
@@ -478,16 +485,7 @@ function renderUI(atts, globalModel, data) {
 		Array.from(document.getElementsByClassName('showTransfer')).forEach(el => el.style.display = 'none');
 		
 		// 隐藏Partial Score列（y1, y2, y3...）
-		for (let i = 0; i <= actualAttributeCount; i++) {
-			const yElement = document.getElementById('text_y' + i);
-			if (yElement) {
-				yElement.parentElement.style.display = 'none';
-			}
-		}
-		const yPartial = document.getElementById('td_yPartial');
-		if (yPartial) {
-			yPartial.style.display = 'none';
-		}
+		Array.from(document.getElementsByClassName('showPartial')).forEach(el => el.style.display = 'none');
 		
 		// 隐藏AI Explainer列
 		const aiExplainerTable = document.getElementById('td_yExplain');
@@ -657,7 +655,7 @@ function generateAttributeRows() {
 			<td class="tg-eqtu showNewFactor no‑select" style="display: none;"><div id="text_w${i}.2">w${i}.2</div></td>
 			<td class="tg-c3ot2 showTransfer">)</td>
 			<td class="tg-c3ot3 xaiLeft" id="td_calc_y${i}">=</td>
-			<td class="tg-zme7"><div id="text_y${i}">y${i}</div></td>
+			<td class="tg-zme7 showPartial"><div id="text_y${i}">y${i}</div></td>
 		`;
 		
 		// 如果hideFactor == -4，隐藏不需要的列
@@ -995,7 +993,7 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
 	<th class="tg-c3ot showNewFactor"></th>
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ot"></th>
-    <th class="tg-c3ow"><span class="tutorial" id="tutorial4">5</span></th>
+    <th class="tg-c3ow showPartial"><span class="tutorial" id="tutorial4">5</span></th>
   </tr>
   <tr>
     <th class="tg-dvpl">Attributes</th>
@@ -1009,7 +1007,7 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     <th class="tg-c3ow0 showNewFactor" style="vertical-align:top; display: none;"><span id="domain4TitleText">New</br>Factor</span></th>
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ot"></th>
-    <th class="tg-c3ow" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
+    <th class="tg-c3ow showPartial" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
   </tr>
 </thead>
 <tbody>
@@ -1031,7 +1029,7 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     <td class="tg-eqtu xaiTop showNewFactor no‑select" style="display: none;"><div id="text_w1.2">w1.2</div></td>
     <td class="tg-c3ot2 showTransfer xaiTop">)</td>
     <td class="tg-c3ot3 xaiLeft" id="td_calc_y1">=</td>
-    <td class="tg-zme7"><div id="text_y1">y1</div></td>
+    <td class="tg-zme7 showPartial"><div id="text_y1">y1</div></td>
     <td class="tg-lboi" rowspan="8" id="td_brace">}</td>     <!-- the rowspan number will be updated by generateAttributeRows() -->
     <td class="tg-lboi" rowspan="8" id="td_calc_ye">+</td>
     <td class="tg-lboi" rowspan="8">&rarr;</td>
@@ -1079,7 +1077,7 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     <td class="tg-eqtu0 xaiBottom showNewFactor no‑select" style="display: none;"><div id="text_w0.2">w0.2</div></td>
     <td class="tg-c3ot0 showTransfer xaiBottom">)</td>
     <td class="tg-c3ot3 xaiLeft" id="td_calc_y0">=</td>
-    <td class="tg-zme7"><div id="text_y0">y0</div></td>
+    <td class="tg-zme7 showPartial"><div id="text_y0">y0</div></td>
   </tr>
   <tr>
     <td class="tg-dvpl" id="td_reset"><button onclick="location.reload()">Reset</button></td>
