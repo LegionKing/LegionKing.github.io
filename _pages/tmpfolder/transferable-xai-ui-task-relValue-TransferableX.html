@@ -375,10 +375,19 @@ function renderUI(atts, globalModel, data) {
 				break;
 		}
 		
+		// Set titles
 		const wi0_title = titleDesc(atts.y_unitName, i, wi0);
-		const wi1_title = xaiType == 'transferable' ? thousands(wi1, 5, false) : titleDesc(atts.y_unitName, i, wi1);
 		document.getElementById('text_' + 'w'+i).title = wi0_title;
+		var wi1_title;
+		const roundedWi1Title = roundToPrecision(Math.abs(wi1 > 1 ? wi1 : 1 / wi1), 3, false);
+		if (xaiType == 'transferable') {
+			wi1_title = (wi1 >= 1 | Number(roundedWi1Text) == 1) ? '×':'÷';
+			wi1_title = wi1_title + (wi1 >= 0 ? '' : '(-') + roundedWi1Title + (wi1 >= 0 ? '' : ')');
+		} else {
+			wi1_title = titleDesc(atts.y_unitName, i, wi1);
+		}
 		document.getElementById('text_' + 'w'+i+'.1').title = wi1_title;
+		document.getElementById('text_' + 'w'+i+'.1_compare').title = wi1_title;
 		
 		if (hideFactor == i || hideFactor <= -2) {
 			if (domainId == 0 || hideFactor == -5) {
@@ -395,7 +404,9 @@ function renderUI(atts, globalModel, data) {
 				if (xaiType != 'transferable') {
 					hideElement.classList.add('subspaceFactorBlack');
 				}
-				document.getElementById('text_' + 'w'+i+'.1_compare').innerHTML = inputCompHTML(i);
+				const compareElement = document.getElementById('text_' + 'w'+i+'.1_compare');
+				compareElement.innerHTML = inputCompHTML(i);
+				compareElement.title = '';
 			}
 
 			const element2 = document.getElementById('text_' + 'w'+i+'.2');
@@ -777,24 +788,32 @@ const calculateYi = function(i) {
 			if (hideFactor == -5 || domainId == 1) {   // wi1 is read from input box
 				switch (comp) {
 					case 'Bigger':
+						input_comp.title = '× ' + wi1;
 						break;
 					case 'Smaller':
+						input_comp.title = '÷ ' + wi1;
 						wi1 = 1 / wi1;
 						break;
 					case 'Similar':   // 如果此时wi1不等于1，则自动把input_comp的值设置为'Select...'
 						if (wi1 != 1) {
 							input_comp.value = 'Select...';
+						} else {
+							input_comp.title = '× ' + wi1;
 						}
 						break;
 					case 'Bigger (Opp)':
 						wi1 = -wi1;
+						input_comp.title = '× (' + wi1 + ')';
 						break;
 					case 'Smaller (Opp)':
+						input_comp.title = '÷ (-' + wi1 + ')';
 						wi1 = -1 / wi1;
 						break;
 				}
 				if (input_comp.value == 'Select...') {
 					document.getElementById('text_' + 'w'+i+'.2').innerHTML = '?';  // Set New Factor to ?
+					document.getElementById('text_' + 'w'+i+'.2').style.color = '#000';
+					document.getElementById('text_' + 'y'+i).innerHTML = '?';
 					return '?';  // Return yPartial as ?
 				}
 			}
