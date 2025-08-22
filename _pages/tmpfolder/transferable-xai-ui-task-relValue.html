@@ -5,7 +5,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.4.3/decimal.min.js"></script>
 <script type="text/javascript">
 
-const thousands = (n, precision, asK) => Number(n.toPrecision(precision)).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',') + (asK ? "k" : ""); // to show comma separation in numbers
+const thousands = (n, precision, asK) => Number(n > 10 ? Math.round(n) : n.toPrecision(precision)).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',') + (asK ? "k" : ""); // to show comma separation in numbers
 const percentage = (n, precision, asPercent) => thousands(n * 100, precision) + (asPercent ? '%' : '');
 const category = (n) => n == 0 ? '0 (No)' : (n == 1 ? '1 (Yes)' : 'Invalid');
 
