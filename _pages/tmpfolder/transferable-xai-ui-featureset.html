@@ -545,7 +545,7 @@
         const showPrediction = Number(urlParams.get('showPrediction'));
         var precision = Number(urlParams.get('precision'));
         if (!precision) {
-            precision = 2;
+            precision = 1;
         }
         const s_hideMatrix = urlParams.get('hideMatrix');
         if (s_hideMatrix == null) {
@@ -577,7 +577,7 @@
         var transformationMatrix;
         var extraBias;    // used when transformation type 
         var extraFactorBias;
-        var transformType = hideMatrix == 0 ? "value" : "factor";  // "value" or "factor"
+        var transformType = hideMatrix <= 0 ? "value" : "factor";  // "value" or "factor"
 
         var actualAttributeCount;
         var instance;
@@ -819,7 +819,7 @@
         	return '<input id="input_f1_' + i + '" class="inputMatrixFactor" type="number" onclick="activateInputs()" onchange="calculateMatrix(null, '+i+', '+'-1'+')" placeholder="'+placeholder+'" value="'+(hideFactor == -3 ? value : '')+'" step="0.1" title="'+title+'" autocomplete="off" />';  // If want to show k after the placeholder, add 'k' after />
         }
 
-        if (xaiType == 'transferable' && domainId == 1 && hideFactor != -4) {
+        if (xaiType == 'transferable' && domainId == 1 && hideFactor != -4 && hideMatrix != -2) {
             Papa.parse("./transferable-xai-app-featureset-attributes.csv", {
             	download: true,
             	header: true,
@@ -1194,8 +1194,8 @@
                  cell.className = 'row-header-value';
                  const span = document.createElement('span');
                  span.className = 'row-header-value-text';
-                 span.textContent = transformType == 'value' ? roundToPrecision(valueFactor2[j] - mean2[j], 1) : hideMatrix == 0 ? approxValueFactor2[j] : '?';
-                 span.title = transformType == 'value' ? roundToPrecision(valueFactor2[j] - mean2[j], 3) : hideMatrix == 0 ? approxValueFactor2[j] : '';
+                 span.textContent = transformType == 'value' ? roundToPrecision(valueFactor2[j] - mean2[j], 1) : hideMatrix <= 0 ? approxValueFactor2[j] : '?';
+                 span.title = transformType == 'value' ? roundToPrecision(valueFactor2[j] - mean2[j], 3, false, true) : hideMatrix <= 0 ? roundToPrecision(valueFactor2[j], 3, false, true) : '';
                  span.id = 'relValFactorSet2_' + j;
                  cell.appendChild(span);
      
@@ -1286,7 +1286,7 @@
                 } else {   // transformType == 'value'
                     if (hideMatrix != 2) {
                         valueSpan.textContent = approxValueFactor1[i];
-                        valueSpan.title = '';
+                        valueSpan.title = roundToPrecision(valueFactor1[i], 3, false, true);
                     } else {
                         valueSpan.innerHTML = inputMatrixFactorHTML(i, approxValueFactor1[i], '');
                         valueSpan.title = '';
@@ -1317,10 +1317,10 @@
                         cell.classList.add('factor-mode');
                     }
                     
-                    if (i < commonFeatureCount && j < commonFeatureCount && hideMatrix == 0) {  //hideMatrix == 0 means don't hide
+                    if (i < commonFeatureCount && j < commonFeatureCount && hideMatrix <= 0) {  //hideMatrix == 0 means don't hide
                         cell.classList.add('common-feature-area');
                     }
-                    if (hideMatrix != 0) {
+                    if (hideMatrix > 0) {
                         cell.innerHTML = inputMatrixHTML(i, j, valueFactor1);
                     } else if (approxMatrixData[i][j] == 0) {
                         cell.textContent = '';
@@ -1397,7 +1397,7 @@
                 
                 // Highlight columns where the row has non-zero values
                 for (let j = 0; j < approxMatrixData[rowIndex].length; j++) {
-                    var rowCellValue = hideMatrix == 0 ? approxMatrixData[rowIndex][j] : Number(document.getElementById('input_m' + rowIndex + '_' + j).value);
+                    var rowCellValue = hideMatrix <= 0 ? approxMatrixData[rowIndex][j] : Number(document.getElementById('input_m' + rowIndex + '_' + j).value);
                     if (rowCellValue !== 0) {
                         const cell = table.rows[4].cells[j + 5]; // +5 because of new first row + new first column
                         cell.classList.add('highlight-col');
@@ -1412,7 +1412,7 @@
                     const cell = table.rows[i + 5].cells[hightColIdx]; // +5 because of new first row
                     cell.classList.add('highlight-col');
                     // Highlight the row where the column has non-zero values
-                    var colCellValue = hideMatrix == 0 ? approxMatrixData[i][colIndex] : Number(document.getElementById('input_m' + i + '_' + colIndex).value);
+                    var colCellValue = hideMatrix <= 0 ? approxMatrixData[i][colIndex] : Number(document.getElementById('input_m' + i + '_' + colIndex).value);
                     if (colCellValue !== 0) {
                         const cell = table.rows[i + 5].cells[4]; // +5 because of new first row, +4 because of new first column
                         cell.classList.add('highlight-row');
@@ -1449,7 +1449,7 @@
             
             // Save current input values before clearing
             const savedInputValues = {};
-            if (hideMatrix != 0) {
+            if (hideMatrix > 0) {
                 const inputs = document.querySelectorAll('.inputMatrix');
                 inputs.forEach(input => {
                     const id = input.id;
@@ -1487,7 +1487,7 @@
             createMatrix();
             
             // Restore saved input values after matrix recreation
-            if (hideMatrix != 0 && Object.keys(savedInputValues).length > 0) {
+            if (hideMatrix > 0 && Object.keys(savedInputValues).length > 0) {
                 setTimeout(() => {
                     Object.keys(savedInputValues).forEach(id => {
                         const input = document.getElementById(id);
@@ -1549,7 +1549,7 @@
                 formula += `${valueMinusMean1[rowOrColIndex]} ` + (hideMatrix == 0 ? `≈ ` : `?≈ `);
                 var calculateResult = 0;
                 for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
-                    var rowCellValue = hideMatrix == 0 ? approxMatrixData[rowOrColIndex][j] : Number(document.getElementById('input_m' + rowOrColIndex + '_' + j).value);
+                    var rowCellValue = hideMatrix <= 0 ? approxMatrixData[rowOrColIndex][j] : Number(document.getElementById('input_m' + rowOrColIndex + '_' + j).value);
                     if (rowCellValue !== 0) {
                         const matrixValue = rowCellValue;
                         const headerValue = valueMinusMean2[j];
@@ -1595,7 +1595,7 @@
             } else {
                 // Check each row for non-zero values
                 for (let i = 0; i < approxMatrixData.length; i++) {
-                    var colCellValue = hideMatrix == 0 ? approxMatrixData[i][rowOrColIndex] : Number(document.getElementById('input_m' + i + '_' + rowOrColIndex).value);
+                    var colCellValue = hideMatrix <= 0 ? approxMatrixData[i][rowOrColIndex] : Number(document.getElementById('input_m' + i + '_' + rowOrColIndex).value);
                     if (colCellValue !== 0) {
                         const matrixValue = colCellValue;
                         const headerValue = hideMatrix == 2 ? document.getElementById('input_f1_' + i).value : approxValueFactor1[i];
@@ -1609,7 +1609,7 @@
     
                 // RHS of the formula string
                 if (formula.length > 0) {
-                    formula += (`≈ ` + (hideMatrix == 0 ? approxValueFactor2[rowOrColIndex] : document.getElementById("relValFactorSet2_" + rowOrColIndex).textContent))
+                    formula += (`≈ ` + (hideMatrix <= 0 ? approxValueFactor2[rowOrColIndex] : document.getElementById("relValFactorSet2_" + rowOrColIndex).textContent))
                 }
             }
             
@@ -1625,46 +1625,48 @@
         
 
         /* ****************************For prediction UI**************************** */
-        Papa.parse("./transferable-xai-app-featureset-attributes.csv", {
-        	download: true,
-        	header: true,
-        	dynamicTyping: true,
-        	complete: function(att_res) {
-        		attsDomain1 = extractAttributeNames(att_res.data, 0);
-                attsDomain2 = extractAttributeNames(att_res.data, 1);
-        		
-        		Papa.parse("./transferable-xai-featureset-models.csv", {
-        			download: true,
-        			header: true,
-        			dynamicTyping: true,
-        			complete: function(models_res) {
-        				globalModel = extractGlobalModel(models_res.data);
-                        
-        				Papa.parse("./transferable-xai-featureset-trials-data.csv", {
-        					download: true,
-        					header: true,
-        					dynamicTyping: true,
-        					complete: function(results) {
-        						instanceDomain1 = extractInstance(attsDomain1, globalModel, results.data, id, 0);
-        						instanceDomain2 = extractInstance(attsDomain2, globalModel, results.data, id, 1);
-        
-                                Papa.parse("./transferable-xai-featureset-transformation-matrix.csv", {
-                                	download: true,
-                                	header: true,
-                                	dynamicTyping: true,
-                                	complete: function(matrix_results) {
-                                		extractExtraFactorBias(matrix_results.data);
-                                		
-                                		// 所有数据加载完成后，开始渲染
-                                		renderUI();
-                                	}
-                                });
-        					}
-        				});
-        			}
-        		});
-        	}
-        });
+        if (hideMatrix != -1) {
+            Papa.parse("./transferable-xai-app-featureset-attributes.csv", {
+            	download: true,
+            	header: true,
+            	dynamicTyping: true,
+            	complete: function(att_res) {
+            		attsDomain1 = extractAttributeNames(att_res.data, 0);
+                    attsDomain2 = extractAttributeNames(att_res.data, 1);
+            		
+            		Papa.parse("./transferable-xai-featureset-models.csv", {
+            			download: true,
+            			header: true,
+            			dynamicTyping: true,
+            			complete: function(models_res) {
+            				globalModel = extractGlobalModel(models_res.data);
+                            
+            				Papa.parse("./transferable-xai-featureset-trials-data.csv", {
+            					download: true,
+            					header: true,
+            					dynamicTyping: true,
+            					complete: function(results) {
+            						instanceDomain1 = extractInstance(attsDomain1, globalModel, results.data, id, 0);
+            						instanceDomain2 = extractInstance(attsDomain2, globalModel, results.data, id, 1);
+            
+                                    Papa.parse("./transferable-xai-featureset-transformation-matrix.csv", {
+                                    	download: true,
+                                    	header: true,
+                                    	dynamicTyping: true,
+                                    	complete: function(matrix_results) {
+                                    		extractExtraFactorBias(matrix_results.data);
+                                    		
+                                    		// 所有数据加载完成后，开始渲染
+                                    		renderUI();
+                                    	}
+                                    });
+            					}
+            				});
+            			}
+            		});
+            	}
+            });
+        }
 
         function renderUI() {
             sortFeatures()
@@ -1730,7 +1732,7 @@
                 document.getElementById('text_' + 'w'+i).title = wi0_title;
                 document.getElementById('text_' + 'w'+i+'.1').title = wi1_title;
 
-                if (xaiType == 'transferable' && domainId == 1 && hideMatrix != 0) {
+                if (xaiType == 'transferable' && domainId == 1 && hideMatrix > 0) {
                     const hideElement = document.getElementById('text_' + 'w'+i+'.1');
                     if (i != 0) {
                         hideElement.innerHTML = '?';
