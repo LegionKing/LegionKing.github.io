@@ -164,7 +164,7 @@
         <td class="tg-zme7 showPartial"><div id="text_y0">y0</div></td>
       </tr>
       <tr>
-        <td class="tg-dvpl"><button onclick="location.reload()">Reset</button></td>
+        <td class="tg-dvpl" id="td_reset"><button onclick="location.reload()">Reset</button></td>
       </tr>
     </tbody>
     </table>
@@ -235,7 +235,6 @@
 
         function extractAttributeNames(data, localDomainId) {	
         	const appId_row = data.findIndex(d => d.appId == appId && d.domainId == localDomainId); // get row that has id
-        	//console.log('appId_row', appId_row);	
         	row = appId_row;
         	
         	const maxAttributeCount = 8;
@@ -595,6 +594,13 @@
             	if (xaiType == 'transferable' && domainId == 0) { Array.from(document.getElementsByClassName('showDomain2')).forEach(el => el.style.display = 'none'); }
             }
 
+            if (hideFactor != -2 && editValues == 0) {
+            	document.getElementById('td_reset').style.display = 'none';
+            }
+            else {
+            	document.getElementById('td_reset').style.display = 'revert';
+            }
+
 
         function inputFactorHTML(i, value, title, isB) {
         	if (hideFactor == -3) {
@@ -859,8 +865,6 @@
         	const input_vi = document.getElementById('input_' + 'v'+i);
         	const input_wi0 = document.getElementById('input_' + 'w'+i);
         	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
-
-            debugger;
         	
         	let wi0, wi1;
         	if (hideFactor <= -2) { 
@@ -884,7 +888,7 @@
         
         	let vi = instance.v[i];
         	if (editValues) { 
-        		vi = Number(input_vi.value);
+        		vi = i == 0 ? 1 : Number(input_vi.value);
         		input_vi.title = titleDesc(atts.y_unitName, i, vi);
         	}
         	
@@ -939,6 +943,7 @@
         }
         
         function calculateNewBiasAndYPartial() {
+            debugger;
             var wMeanSum1 = 0;
             var wMeanSum2 = 0;
             for (let i = 0; i <= actualAttributeCount1; i++) {
@@ -962,8 +967,8 @@
         }
 
         // 页面加载时开始数据加载流程
-        window.onload = function() {
-        };
+        // window.onload = function() {
+        // };
     </script>
 </body>
 </html> 

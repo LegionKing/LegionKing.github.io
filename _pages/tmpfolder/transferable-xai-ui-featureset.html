@@ -2157,7 +2157,7 @@
         
         	let vi = instance.v[i];
         	if (editValues) { 
-        		vi = Number(input_vi.value);
+        		vi = i == 0 ? 1 : Number(input_vi.value);
         		input_vi.title = titleDesc(atts.y_unitName, i, vi);
         	}
         	
