@@ -424,7 +424,7 @@
     <div id="matrixContainer"></div>
     <div id="formulaTooltip" class="formula-tooltip"></div>
     <div id="matrixPredSpace"><br/><br/><br/></div>
-    <table class="tg" border="0">
+    <table class="tg" border="0" id="predictionTable">
     <thead>
       <tr class="tutorialRow">
         <th class="tg-dvpl"><span class="tutorial" id="tutorial1">1</span></th>
@@ -1666,6 +1666,8 @@
             		});
             	}
             });
+        } else {
+            document.getElementById('predictionTable').style.display = 'none';
         }
 
         function renderUI() {
