@@ -629,7 +629,7 @@ function checkTextLinesAndAdjustTransform() {
 		if (textWidth > containerWidth) {
 			// 移除原transform并换成新的
 			let currentStyle = thElement.getAttribute('style');
-			currentStyle = currentStyle + '; transform: translate(-0%,-70%)'
+			currentStyle = currentStyle + '; transform: translate(-0%,-100%); width: 70px'
 			thElement.setAttribute('style', currentStyle);
 		}
 	});
@@ -651,7 +651,7 @@ function generateAttributeRows() {
 		
 		row.innerHTML = `
 			<td class="tg-dvpl"><div id="text_a${i}">a${i}</div></td>
-			<td class="tg-c3ow0"><div id="text_v${i}">v${i}</div></td>
+			<td class="tg-c3ow0"><div id="text_v${i}" style="padding-left: 2px; padding-right: 0px">v${i}</div></td>
 			<td class="tg-c3ow0-mean"><div id="text_minus">&minus;</div></td>
 			<td class="tg-c3ow0-mean"><div id="text_mean${i}">m${i}</div></td>
 			<td class="tg-c3ot"><meter id="meter_v${i}" value=".5"></meter></td>
@@ -924,7 +924,7 @@ Papa.parse("./transferable-xai-app-multitask-attributes.csv", {
 
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0}
-.tg td,th{font-family:Arial,sans-serif;font-size:14px;padding:5px 5px;}
+.tg td,th{font-family:Arial,sans-serif;font-size:13px;padding:1px 1px;}
 .tg-lboi{border-color:inherit;text-align:left;vertical-align:middle}
 .tg-c4wh{background-color:#eafce4;border-color:inherit;color:#656565;text-align:center;}
 .tg-zme7{background-color:#eafce4;border-color:inherit;text-align:right;padding-right:10px}
@@ -932,10 +932,10 @@ Papa.parse("./transferable-xai-app-multitask-attributes.csv", {
 .tg-c3ot{border-color:inherit;text-align:center;}
 .tg-c3ot2{background-color:#cbf4be;color:#000;border-color:inherit;text-align:center;}
 .tg-c3ot3{background-color:#eafce4;border-color:inherit;text-align:center;}
-.tg-c3ow0{border-color:inherit;text-align:center;width:50px;}
+.tg-c3ow0{border-color:inherit;text-align:center;width:45px;}
 .tg-c3ow0-mean{border-color:inherit;text-align:center;width:10px;color:#808688;opacity:0.5;}
-.tg-c3ow{border-color:inherit;text-align:center;width:105px;}
-.tg-c3ow2{border-color:inherit;text-align:center;border: 2px #000 solid; width:125px;}
+.tg-c3ow{border-color:inherit;text-align:center;width:85px;}
+.tg-c3ow2{border-color:inherit;text-align:center;border: 2px #000 solid; width:100px;}
 .tg-c3ow3{border-color:#2e8112;text-align:center;border: 2px #000 solid; width:100px;}
 .tg-dvpl{border-color:inherit;text-align:right;}
 .tg-0pky{border-color:inherit;text-align:left;}
@@ -972,7 +972,7 @@ tr.adjustment {opacity:1;}
     display: inline-block;
     height: 1.2em;
     line-height: 0.8em;
-	width: 125px;
+	width: 100px;
     overflow: visible;
     position: absolute;
 	bottom: 0;
@@ -1021,18 +1021,18 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ow showDomain1" style="vertical-align:top">Factors when predicting<br/><span id="text_domain1Name" class="subspace0">Typical Case</span></th>
     <!-- <th class="tg-c3ot showTransfer"></th> -->
-    <th class="tg-c3ow showDomain2" style="vertical-align:top; padding: 5px 0; width:115px" id="domain2Title" colspan="3"><span id="domain2TitleText">Scales when predicting</span><br/><span id="text_subspaceName" class="subspaceName">Special Case</span></th>
+    <th class="tg-c3ow showDomain2" style="vertical-align:top; padding: 1px; width:100px" id="domain2Title" colspan="3"><span id="domain2TitleText">Scales when predicting</span><br/><span id="text_subspaceName" class="subspaceName">Special Case</span></th>
     <th class="tg-c3ot showNewFactor"></th>
     <th class="tg-c3ow0 showNewFactor" style="vertical-align:top; display: none;"><span id="domain4TitleText">New</br>Factor</span></th>
     <th class="tg-c3ot showTransfer"></th>
     <th class="tg-c3ot"></th>
-    <th class="tg-c3ow showPartial" style="vertical-align:bottom;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
+    <th class="tg-c3ow showPartial" style="vertical-align:top;" id="td_yPartial">Partial <span id="text_y_unitName_partial">Risk</span></th>
   </tr>
 </thead>
 <tbody>
   <tr>
     <td class="tg-dvpl"><div id="text_a1">a1</div></td>
-    <td class="tg-c3ow0"><div id="text_v1">v1</div></td>
+    <td class="tg-c3ow0"><div id="text_v1" style="padding-left: 2px; padding-right: 0px">v1</div></td>
 	<td class="tg-c3ow0-mean"><div id="text_minus">&minus;</div></td>
 	<td class="tg-c3ow0-mean"><div id="text_mean1">m1</div></td>
     <td class="tg-c3ot"><meter id="meter_v1" value=".5"></meter></td>
@@ -1081,7 +1081,7 @@ meter::-moz-meter-bar { background: green; } /* Firefox，默认全是绿色 */
   <!-- Dynamic attribute rows will be inserted here -->
   <tr class="adjustment">
     <td class="tg-dvpl"><div id="text_a0">a0</div></td>
-    <td class="tg-c3ow0"><div id="text_v0" style="display:none">v0</div></td>
+    <td class="tg-c3ow0"><div id="text_v0" style="display:none; padding-left: 2px; padding-right: 0px">v0</div></td>
 	<td class="tg-c3ow0-mean"><div id="text_minus">&nbsp;</div></td>
 	<td class="tg-c3ow0-mean"><div id="text_mean0"></div></td>
     <td class="tg-c3ot"></td>
