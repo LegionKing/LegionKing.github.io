@@ -193,7 +193,7 @@ const inputValueHTML = function(i, value) {
 }
 
 const inputCompHTML = function(i) {
-	var options = ["Similar", "Bigger", "Smaller", "Bigger (Opp)", "Smaller (Opp)", "Select..."];
+	var options = ["Similar", "Bigger", "Smaller", "Similar (Opp)", "Bigger (Opp)", "Smaller (Opp)", "Select..."];
 	var optionsHTML = '';
 	for (var j = 0; j < options.length; j++) {
 		optionsHTML += '<option value="'+options[j]+'">'+options[j]+'</option>';
@@ -799,6 +799,14 @@ const calculateYi = function(i) {
 							input_comp.value = 'Select...';
 						} else {
 							input_comp.title = '× ' + wi1;
+						}
+						break;
+					case 'Similar (Opp)':   // 如果此时wi1不等于1，则自动把input_comp的值设置为'Select...'
+						if (wi1 != 1) {
+							input_comp.value = 'Select...';
+						} else {
+							wi1 = -wi1;
+							input_comp.title = '× (' + wi1 + ')';
 						}
 						break;
 					case 'Bigger (Opp)':
