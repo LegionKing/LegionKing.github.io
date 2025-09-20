@@ -1546,7 +1546,7 @@
             let terms = [];
             
             if (transformType === "value") {
-                formula += `${valueMinusMean1[rowOrColIndex]} ` + (hideMatrix == 0 ? `≈ ` : `?≈ `);
+                formula += `${valueMinusMean1[rowOrColIndex]} ` + (hideMatrix <= 0 ? `≈ ` : `?≈ `);
                 var calculateResult = 0;
                 for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
                     var rowCellValue = hideMatrix <= 0 ? approxMatrixData[rowOrColIndex][j] : Number(document.getElementById('input_m' + rowOrColIndex + '_' + j).value);
