@@ -1194,7 +1194,7 @@
                  cell.className = 'row-header-value';
                  const span = document.createElement('span');
                  span.className = 'row-header-value-text';
-                 span.textContent = transformType == 'value' ? roundToPrecision(valueFactor2[j] - mean2[j], 1) : hideMatrix <= 0 ? approxValueFactor2[j] : '?';
+                 span.textContent = transformType == 'value' ? '= ' + roundToPrecision(valueFactor2[j] - mean2[j], 1) : hideMatrix <= 0 ? approxValueFactor2[j] : '?';
                  span.title = transformType == 'value' ? roundToPrecision(valueFactor2[j] - mean2[j], 3, false, true) : hideMatrix <= 0 ? roundToPrecision(valueFactor2[j], 3, false, true) : '';
                  span.id = 'relValFactorSet2_' + j;
                  cell.appendChild(span);
@@ -1279,11 +1279,11 @@
                 valueCell.className = 'column-header-value';
                 const valueSpan = document.createElement('span');
                 valueSpan.className = 'column-header-value-text';
-                valueSpan.textContent = transformType == 'value' ? roundToPrecision(valueFactor1[i] - mean1[i], 1) : approxValueFactor1[i];
+                // valueSpan.textContent = transformType == 'value' ? '= ' + roundToPrecision(valueFactor1[i] - mean1[i], 1) : approxValueFactor1[i];
                 if (transformType == 'value') {
-                    valueSpan.textContent = roundToPrecision(valueFactor1[i] - mean1[i], 1);
+                    valueSpan.textContent = '= ' + roundToPrecision(valueFactor1[i] - mean1[i], 1);
                     valueSpan.title = roundToPrecision(valueFactor1[i] - mean1[i], 3);
-                } else {   // transformType == 'value'
+                } else {   // transformType == 'factor'
                     if (hideMatrix != 2) {
                         valueSpan.textContent = approxValueFactor1[i];
                         valueSpan.title = roundToPrecision(valueFactor1[i], 3, false, true);
