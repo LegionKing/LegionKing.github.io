@@ -6,6 +6,8 @@
     <title>Matrix</title>
     <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.4.3/decimal.min.js"></script>
+
+    
     <!-- ******************For transformation matrix****************** -->
     <style>
         body {
@@ -88,11 +90,11 @@
             border: 1px solid #1fb911;
             border-radius: 5px;
             padding: 10px;
-            font-family: 'Courier New', monospace;
+            
             font-size: 14px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             z-index: 1000;
-            max-width: 300px;
+            max-width: 400px;
             white-space: pre-wrap;
             display: none;
         }
@@ -1543,9 +1545,11 @@
         
         function generateFormula(rowOrColIndex, transformType) {
             let formula = ``;
+            formula_first_row = ``;
             let terms = [];
             
             if (transformType === "value") {
+                formula_first_row += `[${featureSet1[rowOrColIndex]}] ` + (hideMatrix <= 0 ? `≈ \n` : `?≈ \n`);
                 formula += `${valueMinusMean1[rowOrColIndex]} ` + (hideMatrix <= 0 ? `≈ ` : `?≈ `);
                 var calculateResult = 0;
                 for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
@@ -1557,8 +1561,10 @@
                         
                         if ((formula[formula.length - 2] != '≈') && (formula[formula.length - 2] != '?')) {
                             formula += `+ `;
+                            formula_first_row += `+ `;
                         }
                         formula += ((headerValue >=0 ? `${headerValue} × ` : `(${headerValue}) × `) + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
+                        formula_first_row += `[${featureSet2[j]}] × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `;
                     }
                 }
                 // For categorical attributes, we need to convert the result to a category
@@ -1602,18 +1608,21 @@
                 
                         if (formula.length > 0) {
                             formula += `+ `;
+                            formula_first_row += `+ `;
                         }
                         formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
+                        formula_first_row += `[${featureSet1[i]}]'s Factor × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `;
                     }
                 }
     
                 // RHS of the formula string
                 if (formula.length > 0) {
-                    formula += (`≈ ` + (hideMatrix <= 0 ? approxValueFactor2[rowOrColIndex] : document.getElementById("relValFactorSet2_" + rowOrColIndex).textContent))
+                    formula += (`≈ ` + (hideMatrix <= 0 ? approxValueFactor2[rowOrColIndex] : document.getElementById("relValFactorSet2_" + rowOrColIndex).textContent));
+                    formula_first_row += (`\n≈ [${featureSet2[rowOrColIndex]}]'s Factor`);
                 }
             }
             
-            return formula;
+            return formula_first_row + '\n\n' + formula;
         }
         
         // Create the matrix when page loads
