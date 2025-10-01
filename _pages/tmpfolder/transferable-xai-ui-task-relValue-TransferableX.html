@@ -292,7 +292,7 @@ function renderUI(atts, globalModel, data) {
 			case 'transferable':
 				wi0 = instance.wDomain1[i];
 				wi1 = instance.wDomain2[i];
-				roundedWi1Text = roundToPrecision(Math.abs(wi1 > 1 ? wi1 : 1 / wi1), precision, false);
+				roundedWi1Text = roundToPrecision(Math.abs(Math.abs(wi1) > 1 ? wi1 : 1 / wi1), precision, false);
 				document.getElementById('text_' + 'w'+i).innerHTML = roundToPrecision(wi0, precision, false);
 				const element = document.getElementById('text_' + 'w'+i+'.1');
 				const element_compare = document.getElementById('text_' + 'w'+i+'.1_compare');
@@ -300,7 +300,7 @@ function renderUI(atts, globalModel, data) {
 				element.innerHTML = roundedWi1Text;
 				if (Number(roundedWi1Text) == 1) {
 					element_compare.innerHTML = 'Similar';
-				} else if (wi1 > 1) {
+				} else if (Math.abs(wi1) > 1) {
 					element_compare.innerHTML = 'Bigger';
 				} else {
 					element_compare.innerHTML = 'Smaller';
