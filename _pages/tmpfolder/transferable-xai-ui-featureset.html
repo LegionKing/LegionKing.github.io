@@ -1549,7 +1549,7 @@
             let terms = [];
             
             if (transformType === "value") {
-                formula_first_row += `[${featureSet1[rowOrColIndex]}] ` + (hideMatrix <= 0 ? `≈ \n` : `?≈ \n`);
+                formula_first_row += `[${featureSet1[rowOrColIndex].replace(/<sup>(.*?)<\/sup>/g, "$1")}] ` + (hideMatrix <= 0 ? `≈ \n` : `?≈ \n`);
                 formula += `${valueMinusMean1[rowOrColIndex]} ` + (hideMatrix <= 0 ? `≈ ` : `?≈ `);
                 var calculateResult = 0;
                 for (let j = 0; j < approxMatrixData[rowOrColIndex].length; j++) {
@@ -1564,7 +1564,7 @@
                             formula_first_row += `+ `;
                         }
                         formula += ((headerValue >=0 ? `${headerValue} × ` : `(${headerValue}) × `) + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
-                        formula_first_row += `[${featureSet2[j]}] × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `;
+                        formula_first_row += `[${featureSet2[j].replace(/<sup>(.*?)<\/sup>/g, "$1")}] × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `;
                     }
                 }
                 // For categorical attributes, we need to convert the result to a category
@@ -1611,14 +1611,14 @@
                             formula_first_row += `+ `;
                         }
                         formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
-                        formula_first_row += `[${featureSet1[i]}]'s Factor × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `;
+                        formula_first_row += `[${featureSet1[i].replace(/<sup>(.*?)<\/sup>/g, "$1")}]'s Factor × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `;
                     }
                 }
     
                 // RHS of the formula string
                 if (formula.length > 0) {
                     formula += (`≈ ` + (hideMatrix <= 0 ? approxValueFactor2[rowOrColIndex] : document.getElementById("relValFactorSet2_" + rowOrColIndex).textContent));
-                    formula_first_row += (`\n≈ [${featureSet2[rowOrColIndex]}]'s Factor`);
+                    formula_first_row += (`\n≈ [${featureSet2[rowOrColIndex].replace(/<sup>(.*?)<\/sup>/g, "$1")}]'s Factor`);
                 }
             }
             
