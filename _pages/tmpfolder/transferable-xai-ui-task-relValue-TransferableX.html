@@ -379,9 +379,9 @@ function renderUI(atts, globalModel, data) {
 		const wi0_title = titleDesc(atts.y_unitName, i, wi0);
 		document.getElementById('text_' + 'w'+i).title = wi0_title;
 		var wi1_title;
-		const roundedWi1Title = roundToPrecision(Math.abs(wi1 > 1 ? wi1 : 1 / wi1), 3, false);
+		const roundedWi1Title = roundToPrecision(Math.abs(Math.abs(wi1) > 1 ? wi1 : 1 / wi1), 3, false);
 		if (xaiType == 'transferable') {
-			wi1_title = (wi1 >= 1 | Number(roundedWi1Text) == 1) ? '×':'÷';
+			wi1_title = (Math.abs(wi1) >= 1 | Number(roundedWi1Text) == 1) ? '×':'÷';
 			wi1_title = wi1_title + (wi1 >= 0 ? '' : '(-') + roundedWi1Title + (wi1 >= 0 ? '' : ')');
 		} else {
 			wi1_title = titleDesc(atts.y_unitName, i, wi1);
