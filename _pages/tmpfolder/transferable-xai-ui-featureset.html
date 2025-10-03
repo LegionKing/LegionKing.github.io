@@ -588,6 +588,9 @@
 
         var calculatedFactors2 = [];
 
+        var feature1IndexMap;
+        var feature2IndexMap;
+
         function extractAttributeNames(data, localDomainId) {	
         	const appId_row = data.findIndex(d => d.appId == appId && d.domainId == localDomainId); // get row that has id
         	row = appId_row;
@@ -806,6 +809,7 @@
                 updateFactor2(col);
             }
 
+            debugger;
             calculateYe(null);
         }
 
@@ -965,10 +969,10 @@
             
             // 近似matrix值
             approxMatrixData = matrixData.map(row => row.map(value => 0));   // 默认值为0
-            const threshold = 0.2;
+            const threshold = 0.0002;
             for (let i = 0; i < matrixData.length; i++) {
                 for (let j = 0; j < matrixData[i].length; j++) {
-                    if (Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * matrixData[i][j] / factor2[j]) > threshold) {
+                    if (Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * matrixData[i][j] / factor2[j]) > threshold || Math.abs(matrixData[i][j]) > 0.5) {
                         approxMatrixData[i][j] = roundByLastDecimal(matrixData[i][j]);
                     }
                     else {
@@ -990,6 +994,85 @@
             approxExtraFactorBias = roundToPrecision(extraFactorBias, precision);
             
         }
+
+        function approximateTextFlipped() {
+            for (let i = 0; i < value1.length; i++) {
+                approxValue1[i] = featureSet1[i] == 'BMI' ? roundToPrecision(value1[i], 1, false, true) : roundToPrecision(value1[i], 3);   // BMI特殊处理
+            }
+            for (let i = 0; i < value2.length; i++) {
+                approxValue2[i] = roundToPrecision(value2[i], 3);
+            }
+            for (let i = 0; i < factor1.length; i++) {
+                approxFactor1[i] = roundToPrecision(factor1[i], precision);
+            }
+            for (let i = 0; i < factor2.length; i++) {
+                approxFactor2[i] = roundToPrecision(factor2[i], precision);
+            }
+        
+            // Old version
+            // approxMatrixData = matrixData.map(row => row.map(value => matrixApprox(value)));
+            // approxExtraBias = extraBias.map(value => matrixApprox(value));
+            // approxExtraFactorBias = roundToPrecision(extraFactorBias, precision);
+        
+            // New version
+            function roundByLastDecimal(num, precision=1) {
+                const approxNum = Number(roundToPrecision(num, precision, false));
+                // return approxNum;
+                const str = approxNum.toString();
+            
+                // 判断是否有小数部分
+                if (!str.includes('.')) {
+                    return approxNum;
+                }
+            
+                // 拆分整数和小数部分
+                const [intPart, decPart] = str.split('.');
+                const decimalPlaces = decPart.length;
+                const lastDigit = parseInt(decPart[decimalPlaces - 1], 10);
+            
+                let result = approxNum;
+                if (decPart.length > 1 && lastDigit >= 8) {
+                    // 保留 decimalPlaces - 1 位并四舍五入
+                    result = Number(approxNum.toFixed(decimalPlaces - 1));
+                }
+
+            
+                return result;
+            }
+            
+            // 近似matrix值
+            approxMatrixData = matrixData.map(row => row.map(value => 0));   // 默认值为0
+            const threshold = 0.2;
+            for (let i = 0; i < matrixData.length; i++) {
+                for (let j = 0; j < matrixData[i].length; j++) {
+                    if ((Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * matrixData[i][j] / factor2[j]) > threshold || Math.abs(matrixData[i][j]) > 0.5) && (Math.abs(matrixData[i][j]) > 0.005)) {
+                        approxMatrixData[i][j] = roundByLastDecimal(matrixData[i][j]);
+                    }
+                    else if (featureSet1[i] == 'Height (cm)' && featureSet2[j] == 'BMI') {
+                        approxMatrixData[i][j] = roundByLastDecimal(matrixData[i][j], 1);
+                    }
+                    else {
+                        approxMatrixData[i][j] = 0   // roundToPrecision(matrixData[i][j], 1, true);
+                    }
+                }
+            }
+            // 近似extraBias
+            approxExtraBias = extraBias.map(value => 0);
+            for (let i = 0; i < extraBias.length; i++) {
+                if (Math.abs(extraBias[i] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * extraBias[i] / extraFactorBias) > threshold) {
+                    approxExtraBias[i] = roundByLastDecimal(extraBias[i]);
+                }
+                else {
+                    approxExtraBias[i] = 0   // roundToPrecision(extraBias[i], 1, true);
+                }
+            }
+            // 近似extraFactorBias
+            approxExtraFactorBias = roundToPrecision(extraFactorBias, precision);
+            
+        }
+        
+        
+
 
         /**
          * 对特征进行排序，相同特征排在最前面，不同特征排在后面
@@ -1036,10 +1119,12 @@
             // 构建排序后的特征数组
             featureSet1 = [...commonFeatures, ...uniqueFeatures1];
             featureSet2 = [...commonFeatures, ...uniqueFeatures2];
+            attsDomain1.a = featureSet1;
+            attsDomain2.a = featureSet2;
             
             // 构建索引映射
-            const feature1IndexMap = [...feature1Indices, ...uniqueIndices1];
-            const feature2IndexMap = [...feature2Indices, ...uniqueIndices2];
+            feature1IndexMap = [...feature1Indices, ...uniqueIndices1];
+            feature2IndexMap = [...feature2Indices, ...uniqueIndices2];
 
             // Helper function to reorder a 1D array based on an index map
             const reorderArray = (originalArr, indexMap) => {
@@ -1610,7 +1695,7 @@
                             formula += `+ `;
                             formula_first_row += `+ `;
                         }
-                        formula += (`${headerValue} × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
+                        formula += ((headerValue >= 0 ? `${headerValue} × ` : `(${headerValue}) × `) + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `);
                         formula_first_row += `[${featureSet1[i].replace(/<sup>(.*?)<\/sup>/g, "$1")}]'s Factor × ` + (matrixValue >= 0 ? `${matrixValue}` : `(${matrixValue})`) + ` `;
                     }
                 }
@@ -1627,7 +1712,8 @@
         
         // Create the matrix when page loads
         sortFeatures()
-        approximateText();
+        //approximateText();
+        approximateTextFlipped();
         
         createMatrix();
         }
@@ -2023,7 +2109,7 @@
         }
         
         function sortFeatures() {
-                // 找到相同的特征
+            if (!feature1IndexMap || !feature2IndexMap) {
                 const commonFeatures = [];
                 const feature1Indices = [];
                 const feature2Indices = [];
@@ -2062,17 +2148,26 @@
                         uniqueIndices2.push(i);
                     }
                 }
-                
+
                 // 构建排序后的特征数组
                 attsDomain1.a = [...commonFeatures, ...uniqueFeatures1];
                 attsDomain2.a = [...commonFeatures, ...uniqueFeatures2];
-                
+
                 // 构建索引映射
-                const feature1IndexMap = [...feature1Indices, ...uniqueIndices1];
-                const feature2IndexMap = [...feature2Indices, ...uniqueIndices2];
-            
+                feature1IndexMap = [...feature1Indices, ...uniqueIndices1];
+                feature2IndexMap = [...feature2Indices, ...uniqueIndices2];
+
+                attsDomain1.v_min = reorderArray(attsDomain1.v_min, feature1IndexMap);
+                attsDomain1.v_max = reorderArray(attsDomain1.v_max, feature1IndexMap);
+                attsDomain1.v_step = reorderArray(attsDomain1.v_step, feature1IndexMap);
+                attsDomain2.v_min = reorderArray(attsDomain2.v_min, feature2IndexMap);
+                attsDomain2.v_max = reorderArray(attsDomain2.v_max, feature2IndexMap);
+                attsDomain2.v_step = reorderArray(attsDomain2.v_step, feature2IndexMap);
+
+            }
+                
                 // Helper function to reorder a 1D array based on an index map
-                const reorderArray = (originalArr, indexMap) => {
+                function reorderArray(originalArr, indexMap) {
                     const newArr = new Array(indexMap.length);
                     for (let i = 0; i < indexMap.length; i++) {
                         newArr[i] = originalArr[indexMap[i]];
@@ -2081,17 +2176,11 @@
                 };
             
                 // Reorder based on feature1IndexMap
-                attsDomain1.v_min = reorderArray(attsDomain1.v_min, feature1IndexMap);
-                attsDomain1.v_max = reorderArray(attsDomain1.v_max, feature1IndexMap);
-                attsDomain1.v_step = reorderArray(attsDomain1.v_step, feature1IndexMap);
                 globalModel.wDomain1 = reorderArray(globalModel.wDomain1, feature1IndexMap);
                 globalModel.meanDomain1 = reorderArray(globalModel.meanDomain1, feature1IndexMap);
                 instanceDomain1.v = reorderArray(instanceDomain1.v, feature1IndexMap);
                 instanceDomain1.w = reorderArray(instanceDomain1.w, feature1IndexMap);
                 instanceDomain1.yPartial = reorderArray(instanceDomain1.yPartial, feature1IndexMap);
-                attsDomain2.v_min = reorderArray(attsDomain2.v_min, feature2IndexMap);
-                attsDomain2.v_max = reorderArray(attsDomain2.v_max, feature2IndexMap);
-                attsDomain2.v_step = reorderArray(attsDomain2.v_step, feature2IndexMap);
                 globalModel.wDomain2 = reorderArray(globalModel.wDomain2, feature2IndexMap);
                 globalModel.meanDomain2 = reorderArray(globalModel.meanDomain2, feature2IndexMap);
                 instanceDomain2.v = reorderArray(instanceDomain2.v, feature2IndexMap);
@@ -2147,6 +2236,7 @@
         }
         
         function calculateYi(i) {
+            debugger;
         	const input_vi = document.getElementById('input_' + 'v'+i);
         	const input_wi0 = document.getElementById('input_' + 'w'+i);
         	const input_wi1 = document.getElementById('input_' + 'w'+i+'.1');
@@ -2156,7 +2246,7 @@
                 wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
                 wi1 = Number(document.getElementById('text_' + 'w'+i+'.1').textContent);
             }
-        	else if (hideFactor <= -2 || (hideFactor > 0 && hideFactor == i) || hideMatrix == 2) { 
+        	else if (hideFactor <= -2 || (hideFactor > 0 && hideFactor == i) || hideMatrix > 0) { 
         		wi0 = domainId == 1 ? instance.w[i] : Number(input_wi0.value);
         		wi1 = Number(input_wi1.value);
         		// 只有当输入框有值时才设置title
@@ -2167,7 +2257,6 @@
         		wi1 = 1; 
         	}
         	
-        
         	let vi = instance.v[i];
         	if (editValues) { 
         		vi = i == 0 ? 1 : Number(input_vi.value);
