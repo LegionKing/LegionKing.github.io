@@ -972,7 +972,7 @@
             const threshold = 0.2;
             for (let i = 0; i < matrixData.length; i++) {
                 for (let j = 0; j < matrixData[i].length; j++) {
-                    if (Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * matrixData[i][j] / factor2[j]) > threshold || Math.abs(matrixData[i][j]) > 0.5) {
+                    if (Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * matrixData[i][j] / factor2[j]) > threshold) {
                         approxMatrixData[i][j] = roundByLastDecimal(matrixData[i][j]);
                     }
                     else {
