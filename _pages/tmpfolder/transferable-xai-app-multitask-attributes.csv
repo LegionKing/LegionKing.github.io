@@ -1,5 +1,5 @@
 appId,domainId,domainName,type,y_unit,y_unitName,y_min,y_max,a1,v1_min,v1_max,v1_step,a2,v2_min,v2_max,v2_step,a3,v3_min,v3_max,v3_step,a4,v4_min,v4_max,v4_step,a5,v5_min,v5_max,v5_step,a6,v6_min,v6_max,v6_step
-NHANES,1,diabetes,classification,%,Risk Score,0.0,1.0,Age (years),40,85,1,High blood pressure?,0,1,1,Chest pain?,0,1,1,BMI,14,62,0.5,Average blood sugar (%),3,17,0.5,Relative has diabetes?,0.0,1.0,1.0
-NHANES,0,heart disease,classification,%,Risk Score,0.0,1.0,Age (years),40,85,1,High blood pressure?,0,1,1,Chest pain?,0,1,1,BMI,14,62,0.5,Average blood sugar (%),3,17,0.5,Relative has diabetes?,0.0,1.0,1.0
-AirQuality,1,PM2.5,regression,ug/m^3,Concentration,2.0,835.0,SO2 (ug/m^3),1,315,1,NO2 (ug/m^3),2,285,1,CO (ug/m^3),100,10000,1,O3 (ug/m^3),0,1071,1.0,Wind speed (m/s),0,10,1.0,,,,
-AirQuality,0,PM10,regression,ug/m^3,Concentration,3.0,995.0,SO2 (ug/m^3),1,315,1,NO2 (ug/m^3),2,285,1,CO (ug/m^3),100,10000,1,O3 (ug/m^3),0,1071,1.0,Wind speed (m/s),0,10,1.0,,,,
+NHANES,0,diabetes,classification,,Risk Score,0.0,1.0,Age (years),40,85,1,High blood pressure?,0,1,1,Chest pain?,0,1,1,BMI,14,62,0.5,Glycemic history (%),3,17,0.5,Relative has diabetes?,0.0,1.0,1.0
+NHANES,1,heart disease,classification,,Risk Score,0.0,1.0,Age (years),40,85,1,High blood pressure?,0,1,1,Chest pain?,0,1,1,BMI,14,62,0.5,Glycemic history (%),3,17,0.5,Relative has diabetes?,0.0,1.0,1.0
+AirQuality,0,PM2.5,regression,ug/m^3,Concentration,2.0,835.0,SO2 (ug/m^3),1,315,1,NO2 (ug/m^3),2,285,1,CO (ug/m^3),100,10000,1,O3 (ug/m^3),0,1071,1.0,Wind speed (m/s),0,10,1.0,,,,
+AirQuality,1,PM10,regression,ug/m^3,Concentration,3.0,995.0,SO2 (ug/m^3),1,315,1,NO2 (ug/m^3),2,285,1,CO (ug/m^3),100,10000,1,O3 (ug/m^3),0,1071,1.0,Wind speed (m/s),0,10,1.0,,,,
