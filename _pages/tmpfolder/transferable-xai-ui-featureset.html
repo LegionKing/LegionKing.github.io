@@ -972,7 +972,6 @@
             const threshold = 0.2;
             for (let i = 0; i < matrixData.length; i++) {
                 for (let j = 0; j < matrixData[i].length; j++) {
-                    // console.log(i, j, 'matrixData[i][j]=', matrixData[i][j], Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]), Math.abs(factor1[i] * matrixData[i][j] / factor2[j]));
                     if (Math.abs(attsDomain2.v_max[j] * matrixData[i][j] / attsDomain1.v_max[i]) > threshold || Math.abs(factor1[i] * matrixData[i][j] / factor2[j]) > threshold) {
                         approxMatrixData[i][j] = roundByLastDecimal(matrixData[i][j]);
                     }
@@ -1713,8 +1712,8 @@
         
         // Create the matrix when page loads
         sortFeatures()
-        approximateText();
-        //approximateTextFlipped();
+        //approximateText();
+        approximateTextFlipped();
         
         createMatrix();
         }
