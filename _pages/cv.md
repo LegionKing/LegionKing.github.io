@@ -24,7 +24,7 @@ Experience
   * Supervisor: Dr. [Runze Wu](https://wu-runze.github.io/)
 
 * Summer 2018: Research Intern
-  * iFLYTEK C0.Ltd.
+  * iFLYTEK Co.Ltd.
   * Duties included: algorithm designing for question difficulty prediction
   * Supervisor: Dr. [Haiping Ma](https://scholar.google.com/citations?hl=zh-CN&user=MqGm4q8AAAAJ)
   
