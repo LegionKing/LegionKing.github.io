@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+    	@media print {
+    	  /* 核心：关闭浏览器的颜色替换 */
+    	  * {
+    	    -webkit-print-color-adjust: exact !important;
+    	    print-color-adjust: exact !important;
+    	  }
+    	
+    	  /* 明确指定所有“有语义的颜色” */
+    	  svg * {
+    	    fill: inherit !important;
+    	    stroke: inherit !important;
+    	  }
+    	
+    	}
+    </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrix</title>
