@@ -12,6 +12,16 @@ I have joined in the [NUS Ubicomp Lab](https://ubiquitous.comp.nus.edu.sg/) on 1
 My research interests lie in deep learning, user modeling, explainable AI, and their applications for areas such as education. My current research focuses on measuring users’ abilities with cognitive diagnosis models. I introduced the data-driven strategy into traditional psychometric-based cogntive diagnosis models, and have extended this research from different aspects, including the influences of item contents, knowledge concept structures, and examinees’ context. I have also explored some other related topics in user modeling, such as interpretability, uncertainty, fairness, and cold start. 
 <!-- This is the front page of a website that is powered by the [Academic Pages template](https://github.com/academicpages/academicpages.github.io) and hosted on GitHub pages. [GitHub pages](https://pages.github.com) is a free service in which websites are built and hosted from code and data stored in a GitHub repository, automatically updating when a new commit is made to the respository. This template was forked from the [Minimal Mistakes Jekyll Theme](https://mmistakes.github.io/minimal-mistakes/) created by Michael Rose, and then extended to support the kinds of content that academics have: publications, talks, teaching, a portfolio, blog posts, and a dynamically-generated CV. You can fork [this repository](https://github.com/academicpages/academicpages.github.io) right now, modify the configuration and markdown files, add your own PDFs and other content, and have your own site for free, with no ads! An older version of this template powers my own personal website at [stuartgeiger.com](http://stuartgeiger.com), which uses [this Github repository](https://github.com/staeiou/staeiou.github.io). -->
 
+
+News
+======
+- 2026.03: 🎉🎉 Two papers accepted by CHI 2026.
+- 2026.01: 🎉🎉 One paper accepted by IUI 2026.
+- 2025.05: 🎉🎉 One paper accepted by ACL 2025.
+- 2025.01: 🎉🎉 One paper accepted by IEEE Transactions on Knowledge and Data Engineering.
+- 2024.10: I join in the NUS Ubicomp Lab.
+
+
 Selected Publications
 ======
 A Survey of Models for Cognitive Diagnosis: New Developments and Future Directions  \
