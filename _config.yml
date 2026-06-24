@@ -21,7 +21,7 @@ repository               : "LegionKing/LegionKing.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "profile.png"
+  avatar           : "profile.jpg"
   name             : "Fei Wang (汪飞)"
   # pronouns         : # example: "she/her"  
   bio              : "Ph.D in Computer Science and Technology"
