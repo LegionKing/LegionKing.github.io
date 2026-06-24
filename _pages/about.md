@@ -28,6 +28,18 @@ A Survey of Models for Cognitive Diagnosis: New Developments and Future Directio
 **_Fei Wang_**, *Weibo Gao, Qi Liu, Jiatong Li, Guanhao Zhao, Zheng Zhang, Zhenya Huang, Mengxiao Zhu, Shijin Wang, Wei Tong, Enhong Chen*  \
 Preprint [[paper]](https://arxiv.org/pdf/2407.05458)
 
+Transferable XAI: Relating Understanding Across Domains with Explanation Transfer \
+**_Fei Wang_**, *Yifan Zhang, Brian Y Lim*  \
+IUI 2026 [[paper]](https://arxiv.org/abs/2602.13675)
+
+Beyond Scores: Explainable Intelligent Assessment Strengthens Pre-service Teachers&apos; Assessment Literacy  \
+*Yuang Wei*, **_Fei Wang_**, *Yifan Zhang, Brian Y. Lim, Bo Jiang*  \
+CHI 2026 [[paper]](https://dl.acm.org/doi/abs/10.1145/3772318.3791230)
+
+Comparables XAI: Faithful Example-based AI Explanations with Counterfactual Trace Adjustments  \
+*Yifan Zhang, Tianle Ren,* **_Fei Wang_**, *Brian Y. Lim*  \
+CHI 2026 [[paper]](https://dl.acm.org/doi/abs/10.1145/3772318.3791041)
+
 Unified Uncertainty Estimation for Cognitive Diagnosis Models  \
 **_Fei Wang_**, *Qi Liu, Enhong Chen, Chuanren Liu, Zhenya Huang, Jinze Wu, Shijin Wang*  \
 WWW 2024 [[paper]]({{site.baseurl}}/files/UCD_WWW_2024.pdf) [[code]](https://github.com/LegionKing/UCD)
