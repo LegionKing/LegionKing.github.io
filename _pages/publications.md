@@ -19,7 +19,7 @@ author_profile: true
 
 <!-- copy and paste the following content directly into the _pages/publications.md -->
 ## Journal Papers
-* Xinjie Sun, Kai Zhang, Qi Liu, Shuanghong Shen, **Fei Wang**, Yuxiang Guo, Enhong Chen. DASKT: A dynamic affect simulation method for knowledge tracing. IEEE Transactions on Knowledge and Data Engineering (IEEE TKDE), 37(4): 1714-1727, 2025. [[paper]](https://ieeexplore.ieee.org/abstract/document/10830578/)
+* Xinjie Sun, Kai Zhang, Qi Liu, Shuanghong Shen, **Fei Wang**, Yuxiang Guo, Enhong Chen. DASKT: A dynamic affect simulation method for knowledge tracing. IEEE Transactions on Knowledge and Data Engineering (IEEE TKDE), 37(4): 1714-1727, 2025. [[paper]](https://ieeexplore.ieee.org/abstract/document/10830578/) **ESI highly-cited**
 * Xinjie Sun, Kai Zhang, Shuanghong Shen, **Fei Wang**, Weiyin Gong, Lina Yang, Yuling Ma, Xingying Huo, Qi Liu. MHCD: Multi-Hierarchy Interactive Constraint-Aware Cognitive Diagnosis Framework. Expert Systems with Applications (ESWA), 283: 127701, 2025. [[paper]](https://www.sciencedirect.com/science/article/pii/S0957417425013235)
 * Xinjie Sun, Qi Liu, Kai Zhang, Shuanghong Shen, **Fei Wang**, Yan Zhuang, Zheng Zhang, Weiyin Gong, Shijin Wang, Lina Yang, Xingying Huo. HCD: A Hierarchy Constraint-Aware Neural Cognitive Diagnosis Framework. Neural Networks (NN), 190: 107668, 2025. [[paper]](https://www.sciencedirect.com/science/article/pii/S0893608025005489)
 * Xinjie Sun, Kai Zhang, Shuanghong Shen, **Fei Wang**, Yuxiang Guo, Qi Liu. Target hierarchy-guided knowledge tracing: Fine-grained knowledge state modeling. Expert Systems with Applications (ESWA), 251:123898, 2024. [[paper]](https://www.sciencedirect.com/science/article/abs/pii/S0957417424007644)
